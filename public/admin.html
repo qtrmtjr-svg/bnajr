@@ -173,8 +173,23 @@ tbody tr:hover td{background:#fafbfc}
 </div>
 
 <script>
-const PASS='Ha098765@@', KEY='bna_state', CH='bna_ch';
+const KEY='bna_state', CH='bna_ch';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
+
+async function verifyAdminPassword(input){
+  if(!input){return false;}
+  const res=await fetch('/api/admin/auth', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ password: input })
+  });
+  if(!res.ok){return false;}
+  try {
+    const data=await res.json();
+    return !!data.ok;
+  } catch (e) { return false; }
+}
+
 function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
 function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
 
@@ -183,8 +198,8 @@ const li=document.getElementById('li');
 document.getElementById('lbtn').addEventListener('click',unlock);
 li.addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
 li.addEventListener('input',()=>{document.getElementById('lerr').textContent='';});
-function unlock(){
-  if(li.value===PASS){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
+async function unlock(){
+  if(await verifyAdminPassword(li.value)){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
   else{document.getElementById('lerr').textContent='كلمة المرور غير صحيحة';li.value='';li.focus();}
 }
 document.getElementById('outbtn').addEventListener('click',()=>{stopPoll();document.getElementById('app').style.display='none';document.getElementById('lock').style.display='flex';li.value='';});

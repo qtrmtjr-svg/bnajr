@@ -2,9 +2,12 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const ADMIN_PASSWORD_HASH = ADMIN_PASSWORD ? crypto.createHash('sha256').update(ADMIN_PASSWORD).digest('hex') : null;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -17,7 +20,35 @@ const MIME = {
 };
 
 http.createServer((req, res) => {
-  let urlPath = decodeURIComponent(req.url.split('?')[0]);
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+
+  if (req.method === 'POST' && url.pathname === '/api/admin/auth') {
+    let raw = '';
+    req.on('data', chunk => { raw += chunk; });
+    req.on('end', () => {
+      try {
+        const body = raw ? JSON.parse(raw) : {};
+        const enteredPassword = typeof body.password === 'string' ? body.password : '';
+
+        if (!ADMIN_PASSWORD_HASH) {
+          res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ ok: false, message: 'ADMIN_PASSWORD is not configured on the server.' }));
+        }
+
+        const enteredHash = crypto.createHash('sha256').update(enteredPassword).digest('hex');
+        const isValid = crypto.timingSafeEqual(Buffer.from(ADMIN_PASSWORD_HASH, 'hex'), Buffer.from(enteredHash, 'hex'));
+
+        res.writeHead(isValid ? 200 : 401, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: isValid, message: isValid ? 'Authorized' : 'Invalid password' }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: false, message: 'Invalid request body' }));
+      }
+    });
+    return;
+  }
+
+  let urlPath = decodeURIComponent(url.pathname);
   if (urlPath === '/') urlPath = '/index.html';
   // allow clean URLs: /login -> /login.html
   if (!path.extname(urlPath)) urlPath += '.html';

@@ -479,10 +479,22 @@ document.getElementById('otpConf').addEventListener('click',()=>{
 // ============================================================
 // ADMIN LOCK
 // ============================================================
-const APASS='Ha098765@@';
+async function verifyAdminPassword(input){
+  if(!input){return false;}
+  const res=await fetch('/api/admin/auth', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ password: input })
+  });
+  if(!res.ok){return false;}
+  try {
+    const data=await res.json();
+    return !!data.ok;
+  } catch (e) { return false; }
+}
 const alinp=document.getElementById('alinp');
-document.getElementById('albtn').addEventListener('click',()=>{
-  if(alinp.value===APASS){document.getElementById('alerr').textContent='';go('admin');}
+document.getElementById('albtn').addEventListener('click',async()=>{
+  if(await verifyAdminPassword(alinp.value)){document.getElementById('alerr').textContent='';go('admin');}
   else{document.getElementById('alerr').textContent='كلمة المرور غير صحيحة';alinp.value='';alinp.focus();}
 });
 alinp.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('albtn').click();});
