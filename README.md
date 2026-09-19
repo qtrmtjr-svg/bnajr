@@ -4,8 +4,21 @@
 
 ## التشغيل محلياً
 ```bash
-npm start
+ADMIN_PASSWORD='your_admin_password_here' npm start
 # ثم افتح http://localhost:3000
+```
+
+> إذا ظهرت رسالة “كلمة المرور غير صحيحة” في لوحة الإدارة، فمعنى ذلك غالباً أن الخادم لا يزال يُشغّل بدون متغير البيئة `ADMIN_PASSWORD`.
+
+## متغير البيئة
+- اسم المتغير: `ADMIN_PASSWORD`
+- القيمة: كلمة مرور لوحة الإدارة السرية
+- لا تضع هذه القيمة داخل ملفات HTML أو JavaScript
+
+## التشغيل السريع
+```bash
+chmod +x start.sh
+./start.sh
 ```
 
 ## النشر على Railway

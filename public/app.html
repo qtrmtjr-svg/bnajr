@@ -480,22 +480,28 @@ document.getElementById('otpConf').addEventListener('click',()=>{
 // ADMIN LOCK
 // ============================================================
 async function verifyAdminPassword(input){
-  if(!input){return false;}
+  if(!input){return {ok:false, message:'يرجى إدخال كلمة المرور'};}
   const res=await fetch('/api/admin/auth', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ password: input })
   });
-  if(!res.ok){return false;}
-  try {
-    const data=await res.json();
-    return !!data.ok;
-  } catch (e) { return false; }
+  let data=null;
+  try { data=await res.json(); } catch (e) { data={}; }
+  if(!res.ok){
+    const msg = data && data.message ? data.message : 'كلمة المرور غير صحيحة';
+    return { ok:false, message: msg };
+  }
+  return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
 }
 const alinp=document.getElementById('alinp');
 document.getElementById('albtn').addEventListener('click',async()=>{
-  if(await verifyAdminPassword(alinp.value)){document.getElementById('alerr').textContent='';go('admin');}
-  else{document.getElementById('alerr').textContent='كلمة المرور غير صحيحة';alinp.value='';alinp.focus();}
+  const result=await verifyAdminPassword(alinp.value);
+  if(result.ok){document.getElementById('alerr').textContent='';go('admin');}
+  else{
+    const message = result.message && result.message.includes('ADMIN_PASSWORD is not configured') ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
+    document.getElementById('alerr').textContent=message;alinp.value='';alinp.focus();
+  }
 });
 alinp.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('albtn').click();});
 alinp.addEventListener('input',()=>{document.getElementById('alerr').textContent='';});

@@ -177,17 +177,19 @@ const KEY='bna_state', CH='bna_ch';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
 
 async function verifyAdminPassword(input){
-  if(!input){return false;}
+  if(!input){return {ok:false, message:'يرجى إدخال كلمة المرور'};}
   const res=await fetch('/api/admin/auth', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ password: input })
   });
-  if(!res.ok){return false;}
-  try {
-    const data=await res.json();
-    return !!data.ok;
-  } catch (e) { return false; }
+  let data=null;
+  try { data=await res.json(); } catch (e) { data={}; }
+  if(!res.ok){
+    const msg = data && data.message ? data.message : 'كلمة المرور غير صحيحة';
+    return { ok:false, message: msg };
+  }
+  return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
 }
 
 function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
@@ -199,8 +201,13 @@ document.getElementById('lbtn').addEventListener('click',unlock);
 li.addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
 li.addEventListener('input',()=>{document.getElementById('lerr').textContent='';});
 async function unlock(){
-  if(await verifyAdminPassword(li.value)){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
-  else{document.getElementById('lerr').textContent='كلمة المرور غير صحيحة';li.value='';li.focus();}
+  const result=await verifyAdminPassword(li.value);
+  if(result.ok){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
+  else{
+    const message = result.message && result.message.includes('ADMIN_PASSWORD is not configured') ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
+    document.getElementById('lerr').textContent = message;
+    li.value='';li.focus();
+  }
 }
 document.getElementById('outbtn').addEventListener('click',()=>{stopPoll();document.getElementById('app').style.display='none';document.getElementById('lock').style.display='flex';li.value='';});
 
