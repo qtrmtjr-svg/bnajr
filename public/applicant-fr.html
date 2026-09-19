@@ -194,7 +194,7 @@ function submit_fr(){
   if(!document.getElementById('phone').value.trim()){alert('Veuillez entrer votre numéro de téléphone');return;}
   const d={name:document.getElementById('fullName').value,id:document.getElementById('idNum').value,phone:document.getElementById('phone').value,email:document.getElementById('email').value,wilaya:document.getElementById('wilaya').value,commune:document.getElementById('commune').value,zip:document.getElementById('zip').value,street:document.getElementById('street').value};
   try{localStorage.setItem('bna_applicant',JSON.stringify(d));}catch(e){}
-  alert('Données sauvegardées avec succès ✓');
+  window.location.href = 'login.html';
 }
 </script>
 </body>

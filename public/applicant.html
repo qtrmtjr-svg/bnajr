@@ -351,7 +351,7 @@ document.getElementById('submitBtn').addEventListener('click',()=>{
     street:document.getElementById('street').value,
   };
   try{localStorage.setItem('bna_applicant',JSON.stringify(data));}catch(e){}
-  alert(curLang==='ar'?'تم حفظ البيانات بنجاح ✓':'Données sauvegardées ✓');
+  window.location.href = 'login.html';
 });
 </script>
 </body>

@@ -192,7 +192,7 @@ function submit_ar(){
   if(!document.getElementById('phone').value.trim()){alert('يرجى إدخال رقم الهاتف');return;}
   const d={name:document.getElementById('fullName').value,id:document.getElementById('idNum').value,phone:document.getElementById('phone').value,email:document.getElementById('email').value,wilaya:document.getElementById('wilaya').value,commune:document.getElementById('commune').value,zip:document.getElementById('zip').value,street:document.getElementById('street').value};
   try{localStorage.setItem('bna_applicant',JSON.stringify(d));}catch(e){}
-  alert('تم حفظ البيانات بنجاح ✓');
+  window.location.href = 'login.html';
 }
 </script>
 </body>
