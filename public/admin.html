@@ -148,7 +148,7 @@ tbody tr:hover td{background:#fafbfc}
     <!-- زيارات نشطة -->
     <div class="acrd">
       <svg viewBox="0 0 24 24"><path d="M1 9l2 2c5.52-5.52 14.48-5.52 20 0l2-2C19.93 3.46 4.07 3.46 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4 2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-      <div><div class="albl">الزيارات النشطة الآن</div><div class="anum">3</div></div>
+      <div><div class="albl">الزيارات النشطة الآن</div><div class="anum" id="activeVisitsCount">0</div></div>
     </div>
 
     <!-- الجدول -->
@@ -173,19 +173,62 @@ tbody tr:hover td{background:#fafbfc}
 </div>
 
 <script>
-const PASS='Ha098765@@', KEY='bna_state', CH='bna_ch';
+const KEY='bna_state', CH='bna_ch';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
+
+async function verifyAdminPassword(input){
+  if(!input){return {ok:false, message:'يرجى إدخال كلمة المرور'};}
+  const res=await fetch('/api/admin/auth', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ password: input })
+  });
+  let data=null;
+  try { data=await res.json(); } catch (e) { data={}; }
+  if(!res.ok){
+    const msg = data && data.message ? data.message : 'كلمة المرور غير صحيحة';
+    return { ok:false, message: msg };
+  }
+  return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
+}
+
 function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
 function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+
+function getUsersFromStorage(){
+  try {
+    const state = JSON.parse(localStorage.getItem(KEY)||'{}');
+    const list = Array.isArray(state.applications) ? state.applications : [];
+    const legacy = JSON.parse(localStorage.getItem('bna_applicant') || 'null');
+    if (legacy && !list.some(item => item.phone === legacy.phone || item.idNum === legacy.idNum || item.id === legacy.id)) {
+      list.unshift({
+        id: legacy.id || Date.now(),
+        name: legacy.name || legacy.fullName || 'مقدم طلب',
+        email: legacy.email || '',
+        idNum: legacy.idNum || legacy.id || '',
+        phone: legacy.phone || '',
+        address: legacy.address || [legacy.wilaya, legacy.commune, legacy.street].filter(Boolean).join(' / '),
+        status: legacy.status || 'new'
+      });
+    }
+    return list;
+  } catch (e) {
+    return [];
+  }
+}
 
 // LOCK
 const li=document.getElementById('li');
 document.getElementById('lbtn').addEventListener('click',unlock);
 li.addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
 li.addEventListener('input',()=>{document.getElementById('lerr').textContent='';});
-function unlock(){
-  if(li.value===PASS){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
-  else{document.getElementById('lerr').textContent='كلمة المرور غير صحيحة';li.value='';li.focus();}
+async function unlock(){
+  const result=await verifyAdminPassword(li.value);
+  if(result.ok){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();}
+  else{
+    const message = result.message && (result.message.includes('ADMIN_PASSWORD is not configured') || result.message.includes('لم يتم تهيئة') || result.message.includes('not configured')) ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
+    document.getElementById('lerr').textContent=message;li.value='';li.focus();
+  }
 }
 document.getElementById('outbtn').addEventListener('click',()=>{stopPoll();document.getElementById('app').style.display='none';document.getElementById('lock').style.display='flex';li.value='';});
 
@@ -219,18 +262,27 @@ function renderPend(s){
 }
 function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
 
-// USERS DATA
-const USERS=[
-  {id:1,name:'أحمد محمد',  email:'ahmed@gmail.com',  idNum:'1052345678',phone:'0501234567',address:'الرياض، حي النزهة',  ip:'192.168.1.10',device:'iPhone 14',  browser:'Safari', joined:'2024-01-15',country:'السعودية',status:'active'},
-  {id:2,name:'سارة علي',   email:'sara@gmail.com',   idNum:'2063456789',phone:'0567891234',address:'دبي، مدينة دبي',     ip:'192.168.1.22',device:'Samsung S23',browser:'Chrome', joined:'2024-02-03',country:'الإمارات',status:'active'},
-  {id:3,name:'محمد خالد',  email:'moh@gmail.com',    idNum:'2074567890',phone:'0531112222',address:'القاهرة، المعادي',   ip:'10.0.0.5',    device:'Pixel 7',   browser:'Firefox',joined:'2024-01-28',country:'مصر',    status:'inactive'},
-  {id:4,name:'فاطمة يوسف', email:'fatima@gmail.com', idNum:'2785678901',phone:'0509998887',address:'الكويت، الشويخ',    ip:'172.16.0.9',  device:'iPad Pro',  browser:'Safari', joined:'2024-03-10',country:'الكويت', status:'active'},
-  {id:5,name:'عبدالله نور',email:'abdallah@gmail.com',idNum:'2896789012',phone:'0543334444',address:'المنامة، العدلية', ip:'10.10.1.3',   device:'Laptop HP', browser:'Edge',   joined:'2024-02-20',country:'البحرين',status:'inactive'},
-];
-
 let openDD=null;
+function updateActiveVisitsCount(){
+  const count = getUsersFromStorage().length;
+  const el = document.getElementById('activeVisitsCount');
+  if (el) el.textContent = String(count);
+}
 function renderTable(){
+  const USERS = getUsersFromStorage();
   const tb=document.getElementById('tbody');tb.innerHTML='';
+  updateActiveVisitsCount();
+
+  if(!USERS.length){
+    tb.innerHTML=`
+      <tr>
+        <td colspan="7" style="text-align:center;padding:26px;color:var(--t2);font-size:14px;">
+          لا توجد بيانات حالياً. سيتم عرض البيانات الجديدة عند إرسالها من الموقع.
+        </td>
+      </tr>`;
+    return;
+  }
+
   USERS.forEach((u,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`

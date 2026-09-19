@@ -289,7 +289,7 @@ tbody tr:hover td{background:#fafbfc;}
     </div>
     <div class="accard">
       <svg viewBox="0 0 24 24"><path d="M1 9l2 2c5.52-5.52 14.48-5.52 20 0l2-2C19.93 3.46 4.07 3.46 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4 2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-      <div><div class="aclbl">الزيارات النشطة الآن</div><div class="acnum">3</div></div>
+      <div><div class="aclbl">الزيارات النشطة الآن</div><div class="acnum" id="activeVisitsCount">0</div></div>
     </div>
     <div class="tcard">
       <div class="thdr">📋 جدول المستخدمين</div>
@@ -574,9 +574,15 @@ function updPend(){
 // TABLE
 // ============================================================
 const USERS=[];
+function updateActiveVisitsCount(){
+  const count = (JSON.parse(localStorage.getItem('bna_state') || '{}').applications || []).length;
+  const el = document.getElementById('activeVisitsCount');
+  if (el) el.textContent = String(count);
+}
 let openDD=null;
 function renderTable(){
   const tb=document.getElementById('tbody');tb.innerHTML='';
+  updateActiveVisitsCount();
 
   if(!USERS.length){
     tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:26px;color:var(--lt-t2);font-size:14px;">لا توجد بيانات حالياً. سيتم عرض البيانات الجديدة عند إرسالها من الموقع.</td></tr>`;
