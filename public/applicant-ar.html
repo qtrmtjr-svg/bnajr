@@ -199,6 +199,11 @@ function submit_ar(){
     if(!exists) list.unshift(d);
     state.applications = list;
     localStorage.setItem('bna_state', JSON.stringify(state));
+    fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(d)
+    }).catch(()=>{});
   }catch(e){}
   window.location.href = 'login.html';
 }

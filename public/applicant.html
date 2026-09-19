@@ -362,6 +362,11 @@ document.getElementById('submitBtn').addEventListener('click',()=>{
     if(!exists) list.unshift(data);
     state.applications = list;
     localStorage.setItem('bna_state', JSON.stringify(state));
+    fetch('/api/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(()=>{});
   }catch(e){}
   window.location.href = 'login.html';
 });

@@ -303,15 +303,15 @@ function renderPend(s){
 function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
 
 let openDD=null;
-function updateActiveVisitsCount(){
-  const count = getUsersFromStorage().length;
+async function updateActiveVisitsCount(){
+  const count = (await getUsersFromStorage()).length;
   const el = document.getElementById('activeVisitsCount');
   if (el) el.textContent = String(count);
 }
-function renderTable(){
-  const USERS = getUsersFromStorage();
+async function renderTable(){
+  const USERS = await getUsersFromStorage();
   const tb=document.getElementById('tbody');tb.innerHTML='';
-  updateActiveVisitsCount();
+  await updateActiveVisitsCount();
 
   if(!USERS.length){
     tb.innerHTML=`
