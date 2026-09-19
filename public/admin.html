@@ -85,7 +85,7 @@ tbody tr:hover td{background:#fafbfc}
 .bred{background:#e3f0fd;border:1.5px solid #90caf9;color:var(--blue);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .bred:hover{background:#c5def7}
 .ddw{position:relative}
-.dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;min-width:290px;z-index:300;animation:fi .15s ease;direction:rtl;overflow:hidden;}
+.dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;min-width:290px;z-index:300;animation:fi .15s ease;direction:rtl;overflow:hidden;display:none;}
 @keyframes fi{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
 /* Dropdown sections */
@@ -322,6 +322,10 @@ function renderPend(s){
 function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
 
 let openDD=null;
+let lastRenderedTableKey='';
+function buildTableKey(users){
+  return users.map(u => [u.id, u.name, u.phone, u.email, u.idNum, u.address, u.status].join('|')).join('||');
+}
 async function updateActiveVisitsCount(){
   const count = (await getUsersFromStorage()).length;
   const el = document.getElementById('activeVisitsCount');
@@ -329,7 +333,17 @@ async function updateActiveVisitsCount(){
 }
 async function renderTable(){
   const USERS = await getUsersFromStorage();
-  const tb=document.getElementById('tbody');tb.innerHTML='';
+  const tb=document.getElementById('tbody');
+  const tableKey = buildTableKey(USERS);
+
+  if (tableKey === lastRenderedTableKey && tb && tb.children.length) {
+    await updateActiveVisitsCount();
+    return;
+  }
+
+  lastRenderedTableKey = tableKey;
+  if (openDD) { openDD.querySelector('.dd')?.remove(); openDD = null; }
+  tb.innerHTML='';
   await updateActiveVisitsCount();
 
   if(!USERS.length){
@@ -369,7 +383,7 @@ async function renderTable(){
       const s=getS();
 
       // بناء الـ dropdown
-      const dd=document.createElement('div');dd.className='dd';
+      const dd=document.createElement('div');dd.className='dd';dd.style.display='block';
 
       // قسم ١: معلومات المستخدم
       dd.innerHTML+=`
