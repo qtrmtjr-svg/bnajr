@@ -68,9 +68,9 @@ body{background:var(--bg);font-family:"Cairo",system-ui,sans-serif;color:var(--t
 .anum{font-size:28px;font-weight:700;color:var(--accent);line-height:1}
 
 /* TABLE */
-.tcrd{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:visible;box-shadow:var(--sh2);position:relative;z-index:1;}
+.tcrd{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:visible;box-shadow:var(--sh2);position:relative;z-index:2;}
 .thdr{padding:16px 22px;border-bottom:1px solid var(--b);font-size:16px;font-weight:700;}
-.twrap{overflow-x:auto;overflow-y:visible}
+.twrap{overflow-x:auto;overflow-y:visible;position:relative;z-index:3}
 table{width:100%;border-collapse:collapse;min-width:750px}
 thead tr{background:var(--s2)}
 th{padding:13px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--t2);border-bottom:1px solid var(--b);white-space:nowrap;}
@@ -84,8 +84,8 @@ tbody tr:hover td{background:#fafbfc}
 .bdet:hover{background:#e4e7ed}
 .bred{background:#e3f0fd;border:1.5px solid #90caf9;color:var(--blue);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .bred:hover{background:#c5def7}
-.ddw{position:relative;z-index:20}
-.dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;min-width:290px;z-index:9999;animation:fi .15s ease;direction:rtl;overflow:hidden;display:none;}
+.ddw{position:relative;z-index:30}
+.dd{position:fixed;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;min-width:290px;z-index:20000;animation:fi .15s ease;direction:rtl;overflow:hidden;display:none;}
 @keyframes fi{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
 /* Dropdown sections */
@@ -384,6 +384,9 @@ async function renderTable(){
 
       // بناء الـ dropdown
       const dd=document.createElement('div');dd.className='dd';dd.style.display='block';
+      const rect=btn.getBoundingClientRect();
+      dd.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - 260)}px`;
+      dd.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - 320))}px`;
 
       // قسم ١: معلومات المستخدم
       dd.innerHTML+=`
