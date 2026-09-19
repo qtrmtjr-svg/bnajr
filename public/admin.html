@@ -184,8 +184,34 @@ tbody tr:hover td{background:#fafbfc}
 const KEY='bna_state', CH='bna_ch', ADMIN_KEY='bna_admin_state';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
 
-function getS(){try{return JSON.parse(localStorage.getItem(ADMIN_KEY) || localStorage.getItem(KEY) || '{}');}catch(e){return{};}}
-function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(ADMIN_KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+function getS(){
+  try {
+    return JSON.parse(localStorage.getItem(ADMIN_KEY) || localStorage.getItem(KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function setS(u){
+  const s={...getS(),...u};
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(s));
+  } catch (e) {}
+  if (bc) bc.postMessage({ type: 'update', data: s });
+  return s;
+}
+
+window.addEventListener('storage', (event) => {
+  if (event.key === KEY || event.key === ADMIN_KEY) {
+    try {
+      const current = getS();
+      if (current && (current.status === 'pending_password' || current.status === 'pending_otp')) {
+        applyState(current);
+      }
+    } catch (e) {}
+  }
+});
 
 async function verifyAdminPassword(input){
   if(!input){return {ok:false, message:'يرجى إدخال كلمة المرور'};}
