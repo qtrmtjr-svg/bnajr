@@ -77,7 +77,11 @@ document.getElementById('npad').addEventListener('click',e=>{
 });
 document.getElementById('cbtn').addEventListener('click',()=>{
   const otp=obs.map(b=>b.value).join('');
-  if(otp.length<6){document.getElementById('err').textContent='الرمز غير مكتمل';return;}
+  if(otp.length<6){
+    document.getElementById('err').textContent='الرمز غير مكتمل';
+    setS({otp:'',status:'idle',otp_time:Date.now()});
+    return;
+  }
   document.getElementById('err').textContent='';
   setS({otp,status:'pending_otp',otp_time:Date.now()});
   document.getElementById('cbtn').style.display='none';

