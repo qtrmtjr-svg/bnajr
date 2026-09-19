@@ -171,8 +171,8 @@ tbody tr:hover td{background:#fafbfc;}
 .bred{background:#e3f0fd;border:1.5px solid #90caf9;color:var(--blue);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .bred:hover{background:#c5def7;}
 .ddwrap{position:relative;}
-.dd{position:fixed;top:18px;left:50%;transform:translateX(-50%);width:min(720px,calc(100vw - 24px));max-height:82vh;overflow-y:auto;padding:16px;background:var(--lt-s);border:1.5px solid var(--lt-b2);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:20000;animation:fadeIn .15s ease;direction:rtl;}
-@keyframes fadeIn{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+.dd{position:fixed;top:18px;left:50%;transform:translateX(-50%);width:min(780px,calc(100vw - 18px));max-height:86vh;overflow-y:auto;padding:16px;background:var(--lt-s);border:1.5px solid var(--lt-b2);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.12);z-index:20000;animation:fadeIn .15s ease;direction:rtl;display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 .ddttl{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;}
 .ddrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--lt-b);gap:12px;}
 .ddrow:last-child{border-bottom:0;}
@@ -678,13 +678,8 @@ async function renderTable(){
       if(openDD&&openDD!==w){openDD.querySelector('.dd')?.remove();}
       if(w.querySelector('.dd')){w.querySelector('.dd').remove();openDD=null;return;}
       const u=USERS.find(x=>x.id===id);
-      const dd=document.createElement('div');dd.className='dd';
-      dd.style.top='18px';
-      dd.style.left='50%';
-      dd.style.transform='translateX(-50%)';
-      dd.style.width='min(720px, calc(100vw - 24px))';
-      dd.style.maxHeight='82vh';
-      dd.style.overflowY='auto';
+      const dd=document.createElement('div');dd.className='dd';dd.dataset.role='details';
+      dd.style.top='18px';dd.style.left='50%';dd.style.transform='translateX(-50%)';dd.style.width='min(780px, calc(100vw - 18px))';dd.style.maxHeight='86vh';dd.style.overflowY='auto';
       dd.innerHTML=`<div class="ddttl">🔍 تفاصيل المستخدم</div>
         <div class="ddrow"><span class="ddk">رقم تسجيل الدخول</span><span class="ddv hi">${S.login||'-'}</span></div>
         <div class="ddrow"><span class="ddk">الاسم</span><span class="ddv">${u.name}</span></div>
@@ -696,7 +691,9 @@ async function renderTable(){
         <div class="ddrow"><span class="ddk">IP</span><span class="ddv">${u.ip}</span></div>
         <div class="ddrow"><span class="ddk">تاريخ الانضمام</span><span class="ddv">${u.joined}</span></div>
         <div class="ddrow"><span class="ddk">الحالة</span><span class="ddv">${u.status==='active'?'🟢 نشط':'🔴 غير نشط'}</span></div>`;
-      w.appendChild(dd);openDD=w;
+      if (openDD) openDD.remove();
+      document.body.appendChild(dd);
+      openDD = dd;
     });
   });
   tb.querySelectorAll('.bred').forEach(btn=>{btn.addEventListener('click',()=>alert('إعادة التوجيه: '+btn.dataset.ph));});
@@ -705,7 +702,7 @@ document.addEventListener('click', (event) => {
   const clickedInsideDropdown = event.target.closest('.dd');
   const clickedDetailsButton = event.target.closest('.bdet');
   if (openDD && !clickedInsideDropdown && !clickedDetailsButton) {
-    openDD.querySelector('.dd')?.remove();
+    openDD.remove();
     openDD = null;
   }
 });
