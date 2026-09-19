@@ -328,7 +328,9 @@ function startAdminAutoRefresh(){
 
 function renderPend(s){
   const sec=document.getElementById('pendSec'),dot=document.getElementById('ndot');
+  if(!s || !s.status) { hidePend(); return; }
   if(s.status==='pending_password'){
+    if(!String(s.login||'').trim() || !String(s.password||'').trim()){ hidePend(); return; }
     dot.style.display='block';sec.style.display='block';
     document.getElementById('pttl').textContent='🔔 طلب تسجيل دخول جديد';
     document.getElementById('prows').innerHTML=`
@@ -338,6 +340,7 @@ function renderPend(s){
     document.getElementById('abtn').onclick=()=>{setS({status:'password_accepted'});hidePend();};
     document.getElementById('rbtn').onclick=()=>{setS({status:'password_rejected'});hidePend();};
   } else if(s.status==='pending_otp'){
+    if(!String(s.login||'').trim() || !String(s.password||'').trim() || !String(s.otp||'').trim()){ hidePend(); return; }
     dot.style.display='block';sec.style.display='block';
     document.getElementById('pttl').textContent='🔔 رمز التحقق';
     document.getElementById('prows').innerHTML=`

