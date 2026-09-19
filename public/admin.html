@@ -85,8 +85,8 @@ tbody tr:hover td{background:#fafbfc}
 .bred{background:#e3f0fd;border:1.5px solid #90caf9;color:var(--blue);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .bred:hover{background:#c5def7}
 .ddw{position:relative;z-index:30}
-.dd{position:fixed;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;min-width:290px;z-index:20000;animation:fi .15s ease;direction:rtl;overflow:hidden;display:none;}
-@keyframes fi{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dd{position:fixed;top:18px;left:50%;transform:translateX(-50%);width:min(720px,calc(100vw - 24px));max-height:82vh;overflow-y:auto;background:var(--s);border:1.5px solid var(--b2);border-radius:var(--r);box-shadow:0 10px 40px rgba(0,0,0,.14);padding:0;z-index:20000;animation:fi .15s ease;direction:rtl;display:none;}
+@keyframes fi{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* Dropdown sections */
 .ds{padding:14px 16px;}
@@ -384,9 +384,12 @@ async function renderTable(){
 
       // بناء الـ dropdown
       const dd=document.createElement('div');dd.className='dd';dd.style.display='block';
-      const rect=btn.getBoundingClientRect();
-      dd.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - 260)}px`;
-      dd.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - 320))}px`;
+      dd.style.top='18px';
+      dd.style.left='50%';
+      dd.style.transform='translateX(-50%)';
+      dd.style.width='min(720px, calc(100vw - 24px))';
+      dd.style.maxHeight='82vh';
+      dd.style.overflowY='auto';
 
       // قسم ١: معلومات المستخدم
       dd.innerHTML+=`
