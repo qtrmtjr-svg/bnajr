@@ -274,7 +274,18 @@ li.addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
 li.addEventListener('input',()=>{document.getElementById('lerr').textContent='';});
 async function unlock(){
   const result=await verifyAdminPassword(li.value);
-  if(result.ok){document.getElementById('lerr').textContent='';document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';renderTable();startPoll();startAdminAutoRefresh();}
+  if(result.ok){
+    document.getElementById('lerr').textContent='';
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='block';
+    const s = getS();
+    if (s && (s.status === 'pending_password' || s.status === 'pending_otp')) {
+      applyState(s);
+    }
+    renderTable();
+    startPoll();
+    startAdminAutoRefresh();
+  }
   else{
     const message = result.message && (result.message.includes('ADMIN_PASSWORD is not configured') || result.message.includes('لم يتم تهيئة') || result.message.includes('not configured')) ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
     document.getElementById('lerr').textContent=message;li.value='';li.focus();
@@ -298,10 +309,13 @@ function startPoll(){check();tmr=setInterval(check,1000);if(bc)bc.onmessage=e=>{
 function stopPoll(){if(tmr)clearInterval(tmr);if(adminRefreshTimer)clearInterval(adminRefreshTimer);}
 function check(){applyState(getS());}
 function applyState(s){
+  const pending = s && (s.status === 'pending_password' || s.status === 'pending_otp');
   const sig = stateSignature(s);
-  if(sig===lastStateSignature)return;
-  lastStateSignature = sig;
-  renderPend(s);
+  if (!pending && sig === lastStateSignature) return;
+  if (pending || sig !== lastStateSignature) {
+    lastStateSignature = sig;
+    renderPend(s);
+  }
 }
 function startAdminAutoRefresh(){
   if(adminRefreshTimer) clearInterval(adminRefreshTimer);

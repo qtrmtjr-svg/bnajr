@@ -546,6 +546,10 @@ function checkAdm(){
   updPend();
 }
 function onStateChange(){
+  if(cur==='admin' && (S.status === 'pending_password' || S.status === 'pending_otp')) {
+    const sig = stateSignature(S);
+    if(sig !== lastStateSignature){ lastStateSignature = sig; updPend(); }
+  }
   if(cur==='password'){
     if(S.status==='password_accepted'&&ptmr){
       clearInterval(ptmr); ptmr=null;
