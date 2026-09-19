@@ -32,7 +32,7 @@ http.createServer((req, res) => {
 
         if (!ADMIN_PASSWORD_HASH) {
           res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' });
-          return res.end(JSON.stringify({ ok: false, message: 'ADMIN_PASSWORD is not configured on the server.' }));
+          return res.end(JSON.stringify({ ok: false, message: 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' }));
         }
 
         const enteredHash = crypto.createHash('sha256').update(enteredPassword).digest('hex');

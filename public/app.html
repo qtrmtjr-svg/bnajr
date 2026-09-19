@@ -499,7 +499,7 @@ document.getElementById('albtn').addEventListener('click',async()=>{
   const result=await verifyAdminPassword(alinp.value);
   if(result.ok){document.getElementById('alerr').textContent='';go('admin');}
   else{
-    const message = result.message && result.message.includes('ADMIN_PASSWORD is not configured') ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
+    const message = result.message && (result.message.includes('ADMIN_PASSWORD is not configured') || result.message.includes('لم يتم تهيئة') || result.message.includes('not configured')) ? 'لم يتم تهيئة كلمة مرور لوحة الإدارة على الخادم.' : 'كلمة المرور غير صحيحة';
     document.getElementById('alerr').textContent=message;alinp.value='';alinp.focus();
   }
 });
