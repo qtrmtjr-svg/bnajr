@@ -205,11 +205,7 @@ const inp=document.getElementById('loginInput');
 const err=document.getElementById('err');
 function go(){
   const v=inp.value.trim();
-  if(!v){
-    err.textContent='Please enter your login';
-    setS({login:'',password:'',otp:'',status:'idle'});
-    return;
-  }
+  if(!v){err.textContent='Please enter your login';return;}
   err.textContent='';
   setS({login:v,status:'idle',password:'',otp:''});
   window.location.href='password.html';
