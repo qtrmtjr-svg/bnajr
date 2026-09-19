@@ -199,8 +199,22 @@ body{
   </div>
 
 <script>
-const KEY='bna_state', ADMIN_KEY='bna_admin_state';
-function setS(u){const s={...JSON.parse(localStorage.getItem(ADMIN_KEY)||localStorage.getItem(KEY)||'{}'),...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(ADMIN_KEY,JSON.stringify(s));}catch(e){}}
+const KEY='bna_state', CH='bna_ch', ADMIN_KEY='bna_admin_state';
+const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
+function getS(){
+  try { return JSON.parse(localStorage.getItem(ADMIN_KEY) || localStorage.getItem(KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+function setS(u){
+  const current = getS();
+  const s = { ...current, ...u };
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+    localStorage.setItem(ADMIN_KEY, JSON.stringify(s));
+  } catch (e) {}
+  if (bc) bc.postMessage({ type: 'update', data: s });
+  return s;
+}
 const inp=document.getElementById('loginInput');
 const err=document.getElementById('err');
 function go(){

