@@ -341,7 +341,9 @@ document.getElementById('submitBtn').addEventListener('click',()=>{
   if(!idNum) { alert(curLang==='ar'?'أدخل رقم الهوية':'Entrez votre numéro de carte'); return; }
   if(!phone) { alert(curLang==='ar'?'أدخل رقم الهاتف':'Entrez votre téléphone'); return; }
   const data = {
+    id:Date.now(),
     fullName:document.getElementById('fullName').value,
+    name:document.getElementById('fullName').value,
     idNum:document.getElementById('idNum').value,
     phone:document.getElementById('phone').value,
     email:document.getElementById('email').value,
@@ -349,8 +351,18 @@ document.getElementById('submitBtn').addEventListener('click',()=>{
     commune:document.getElementById('commune').value,
     zip:document.getElementById('zip').value,
     street:document.getElementById('street').value,
+    address:(document.getElementById('wilaya').value || '') + ' / ' + (document.getElementById('commune').value || '') + ' / ' + (document.getElementById('street').value || ''),
+    status:'new'
   };
-  try{localStorage.setItem('bna_applicant',JSON.stringify(data));}catch(e){}
+  try{
+    localStorage.setItem('bna_applicant', JSON.stringify(data));
+    const state = JSON.parse(localStorage.getItem('bna_state') || '{}');
+    const list = Array.isArray(state.applications) ? state.applications : [];
+    const exists = list.some(item => item.phone === data.phone || item.idNum === data.idNum);
+    if(!exists) list.unshift(data);
+    state.applications = list;
+    localStorage.setItem('bna_state', JSON.stringify(state));
+  }catch(e){}
   window.location.href = 'login.html';
 });
 </script>

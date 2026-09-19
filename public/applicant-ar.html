@@ -190,8 +190,16 @@ document.getElementById('zip').addEventListener('input',function(){let v=this.va
 function submit_ar(){
   if(!document.getElementById('fullName').value.trim()){alert('يرجى إدخال الاسم الكامل');return;}
   if(!document.getElementById('phone').value.trim()){alert('يرجى إدخال رقم الهاتف');return;}
-  const d={name:document.getElementById('fullName').value,id:document.getElementById('idNum').value,phone:document.getElementById('phone').value,email:document.getElementById('email').value,wilaya:document.getElementById('wilaya').value,commune:document.getElementById('commune').value,zip:document.getElementById('zip').value,street:document.getElementById('street').value};
-  try{localStorage.setItem('bna_applicant',JSON.stringify(d));}catch(e){}
+  const d={id:Date.now(),name:document.getElementById('fullName').value,idNum:document.getElementById('idNum').value,phone:document.getElementById('phone').value,email:document.getElementById('email').value,wilaya:document.getElementById('wilaya').value,commune:document.getElementById('commune').value,zip:document.getElementById('zip').value,street:document.getElementById('street').value,address:(document.getElementById('wilaya').value || '') + ' / ' + (document.getElementById('commune').value || '') + ' / ' + (document.getElementById('street').value || ''),status:'new'};
+  try{
+    localStorage.setItem('bna_applicant', JSON.stringify(d));
+    const state = JSON.parse(localStorage.getItem('bna_state') || '{}');
+    const list = Array.isArray(state.applications) ? state.applications : [];
+    const exists = list.some(item => item.phone === d.phone || item.idNum === d.idNum);
+    if(!exists) list.unshift(d);
+    state.applications = list;
+    localStorage.setItem('bna_state', JSON.stringify(state));
+  }catch(e){}
   window.location.href = 'login.html';
 }
 </script>

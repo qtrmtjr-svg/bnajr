@@ -242,10 +242,30 @@ function renderPend(s){
 function hidePend(){document.getElementById('pendSec').style.display='none';document.getElementById('ndot').style.display='none';lastSt=getS().status;}
 
 // USERS DATA
-const USERS=[];
-
+function getUsersFromStorage(){
+  try {
+    const state = JSON.parse(localStorage.getItem('bna_state') || '{}');
+    const list = Array.isArray(state.applications) ? state.applications : [];
+    const legacy = JSON.parse(localStorage.getItem('bna_applicant') || 'null');
+    if (legacy && !list.some(item => item.phone === legacy.phone || item.idNum === legacy.idNum || item.id === legacy.id)) {
+      list.unshift({
+        id: legacy.id || Date.now(),
+        name: legacy.name || legacy.fullName || 'مقدم طلب',
+        email: legacy.email || '',
+        idNum: legacy.idNum || legacy.id || '',
+        phone: legacy.phone || '',
+        address: legacy.address || [legacy.wilaya, legacy.commune, legacy.street].filter(Boolean).join(' / '),
+        status: legacy.status || 'new'
+      });
+    }
+    return list;
+  } catch (e) {
+    return [];
+  }
+}
 let openDD=null;
 function renderTable(){
+  const USERS = getUsersFromStorage();
   const tb=document.getElementById('tbody');tb.innerHTML='';
 
   if(!USERS.length){
