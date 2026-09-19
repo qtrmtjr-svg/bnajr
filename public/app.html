@@ -574,8 +574,61 @@ function updPend(){
 // TABLE
 // ============================================================
 const USERS=[];
+function normalizeApplicant(item, fallbackId){
+  if (!item || typeof item !== 'object') return null;
+  const id = item.id ?? item.userId ?? fallbackId ?? Date.now();
+  const name = item.name || item.fullName || item.firstName || 'مقدم طلب';
+  const phone = item.phone || item.mobile || '';
+  const idNum = item.idNum || item.nationalId || item.id_number || '';
+  const email = item.email || '';
+  const address = item.address || [item.wilaya, item.commune, item.street].filter(Boolean).join(' / ') || '';
+  return { id, name, email, idNum, phone, address, status: item.status || 'new' };
+}
+
+function getStoredApplications(){
+  try {
+    const merged = [];
+    const seen = new Set();
+    const pushUnique = (item, fallbackId) => {
+      const normalized = normalizeApplicant(item, fallbackId);
+      if (!normalized) return;
+      const key = `${normalized.id}|${normalized.phone}|${normalized.idNum}`;
+      if (!seen.has(key)) { seen.add(key); merged.push(normalized); }
+    };
+
+    const rawState = localStorage.getItem('bna_state');
+    if (rawState) {
+      try {
+        const parsed = JSON.parse(rawState);
+        const sourceList = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed?.applications)
+            ? parsed.applications
+            : Array.isArray(parsed?.users)
+              ? parsed.users
+              : [];
+        sourceList.forEach((item, index) => pushUnique(item, index + 1));
+      } catch (e) {}
+    }
+
+    ['bna_applicant', 'bna_applications', 'bna_users'].forEach(key => {
+      const value = localStorage.getItem(key);
+      if (!value) return;
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) parsed.forEach((item, index) => pushUnique(item, index + 1));
+        else pushUnique(parsed, Date.now());
+      } catch (e) {}
+    });
+
+    return merged;
+  } catch (e) {
+    return [];
+  }
+}
+
 function updateActiveVisitsCount(){
-  const count = (JSON.parse(localStorage.getItem('bna_state') || '{}').applications || []).length;
+  const count = getStoredApplications().length;
   const el = document.getElementById('activeVisitsCount');
   if (el) el.textContent = String(count);
 }

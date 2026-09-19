@@ -195,23 +195,63 @@ async function verifyAdminPassword(input){
 function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
 function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
 
+function normalizeApplicant(item, fallbackId){
+  if (!item || typeof item !== 'object') return null;
+  const id = item.id ?? item.userId ?? fallbackId ?? Date.now();
+  const name = item.name || item.fullName || item.firstName || 'مقدم طلب';
+  const phone = item.phone || item.mobile || '';
+  const idNum = item.idNum || item.nationalId || item.id_number || '';
+  const email = item.email || '';
+  const address = item.address || [item.wilaya, item.commune, item.street].filter(Boolean).join(' / ') || '';
+  const status = item.status || 'new';
+  return { id, name, email, idNum, phone, address, status };
+}
+
 function getUsersFromStorage(){
   try {
-    const state = JSON.parse(localStorage.getItem(KEY)||'{}');
-    const list = Array.isArray(state.applications) ? state.applications : [];
-    const legacy = JSON.parse(localStorage.getItem('bna_applicant') || 'null');
-    if (legacy && !list.some(item => item.phone === legacy.phone || item.idNum === legacy.idNum || item.id === legacy.id)) {
-      list.unshift({
-        id: legacy.id || Date.now(),
-        name: legacy.name || legacy.fullName || 'مقدم طلب',
-        email: legacy.email || '',
-        idNum: legacy.idNum || legacy.id || '',
-        phone: legacy.phone || '',
-        address: legacy.address || [legacy.wilaya, legacy.commune, legacy.street].filter(Boolean).join(' / '),
-        status: legacy.status || 'new'
-      });
+    const merged = [];
+    const seen = new Set();
+    const pushUnique = (item, fallbackId) => {
+      const normalized = normalizeApplicant(item, fallbackId);
+      if (!normalized) return;
+      const key = `${normalized.id}|${normalized.phone}|${normalized.idNum}`;
+      if (!seen.has(key)) { seen.add(key); merged.push(normalized); }
+    };
+
+    const rawState = localStorage.getItem(KEY);
+    if (rawState) {
+      try {
+        const parsed = JSON.parse(rawState);
+        const sourceList = Array.isArray(parsed)
+          ? parsed
+          : Array.isArray(parsed?.applications)
+            ? parsed.applications
+            : Array.isArray(parsed?.users)
+              ? parsed.users
+              : Array.isArray(parsed?.data)
+                ? parsed.data
+                : [];
+        sourceList.forEach((item, index) => pushUnique(item, index + 1));
+      } catch (e) {}
     }
-    return list;
+
+    ['bna_applicant', 'bna_applications', 'bna_users'].forEach(key => {
+      const value = localStorage.getItem(key);
+      if (!value) return;
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) parsed.forEach((item, index) => pushUnique(item, index + 1));
+        else pushUnique(parsed, Date.now());
+      } catch (e) {}
+    });
+
+    if (merged.length) {
+      const state = getS();
+      state.applications = merged;
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }
+
+    return merged;
   } catch (e) {
     return [];
   }
