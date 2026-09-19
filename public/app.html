@@ -573,7 +573,17 @@ function updPend(){
 // ============================================================
 // TABLE
 // ============================================================
-const USERS=[];
+let USERS=[];
+async function fetchApplicationsFromServer(){
+  try {
+    const res = await fetch('/api/applications', { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
 function normalizeApplicant(item, fallbackId){
   if (!item || typeof item !== 'object') return null;
   const id = item.id ?? item.userId ?? fallbackId ?? Date.now();
@@ -627,15 +637,20 @@ function getStoredApplications(){
   }
 }
 
-function updateActiveVisitsCount(){
-  const count = getStoredApplications().length;
+async function updateActiveVisitsCount(){
+  const serverApps = await fetchApplicationsFromServer();
+  const localApps = getStoredApplications();
+  const count = (serverApps.length ? serverApps : localApps).length;
   const el = document.getElementById('activeVisitsCount');
   if (el) el.textContent = String(count);
 }
 let openDD=null;
-function renderTable(){
+async function renderTable(){
   const tb=document.getElementById('tbody');tb.innerHTML='';
-  updateActiveVisitsCount();
+  const serverApps = await fetchApplicationsFromServer();
+  const records = serverApps.length ? serverApps : getStoredApplications();
+  USERS = records.map((u, index) => normalizeApplicant(u, index + 1) || { id: index + 1, name: 'مقدم طلب', email: '', idNum: '', phone: '', address: '', status: 'new' });
+  await updateActiveVisitsCount();
 
   if(!USERS.length){
     tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:26px;color:var(--lt-t2);font-size:14px;">لا توجد بيانات حالياً. سيتم عرض البيانات الجديدة عند إرسالها من الموقع.</td></tr>`;
@@ -681,8 +696,18 @@ function renderTable(){
 }
 document.addEventListener('click',()=>{if(openDD){openDD.querySelector('.dd')?.remove();openDD=null;}});
 
+function startLiveRefresh(){
+  setInterval(async()=>{
+    try {
+      await renderTable();
+      await updateActiveVisitsCount();
+    } catch (e) {}
+  }, 3000);
+}
+
 // INIT
 buildKbd();upCase();prender();
+startLiveRefresh();
 </script>
 </body>
 </html>
