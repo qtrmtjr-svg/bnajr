@@ -4,7 +4,7 @@
 
 ## التشغيل محلياً
 ```bash
-ADMIN_PASSWORD='your_admin_password_here' npm start
+ADMIN_PASSWORD='admin123' npm start
 # ثم افتح http://localhost:3000
 ```
 
