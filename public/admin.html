@@ -457,7 +457,14 @@ async function renderTable(){
   });
 }
 
-document.addEventListener('click',()=>{if(openDD){openDD.querySelector('.dd')?.remove();openDD=null;}});
+document.addEventListener('click',(event)=>{
+  const clickedInsideDropdown = event.target.closest('.dd');
+  const clickedDetailsButton = event.target.closest('.bdet');
+  if (openDD && !clickedInsideDropdown && !clickedDetailsButton) {
+    openDD.querySelector('.dd')?.remove();
+    openDD = null;
+  }
+});
 </script>
 </body>
 </html>
