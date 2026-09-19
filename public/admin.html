@@ -203,9 +203,6 @@ async function verifyAdminPassword(input){
   return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
 }
 
-function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
-function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
-
 function normalizeApplicant(item, fallbackId){
   if (!item || typeof item !== 'object') return null;
   const id = item.id ?? item.userId ?? fallbackId ?? Date.now();
@@ -239,7 +236,7 @@ async function getUsersFromStorage(){
       if (!seen.has(key)) { seen.add(key); merged.push(normalized); }
     };
 
-    const rawState = localStorage.getItem(KEY);
+    const rawState = localStorage.getItem(ADMIN_KEY) || localStorage.getItem(KEY);
     if (rawState) {
       try {
         const parsed = JSON.parse(rawState);
@@ -270,6 +267,7 @@ async function getUsersFromStorage(){
       const state = getS();
       state.applications = merged;
       localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(ADMIN_KEY, JSON.stringify(state));
     }
 
     return merged;
