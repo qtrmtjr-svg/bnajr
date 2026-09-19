@@ -173,7 +173,7 @@ tbody tr:hover td{background:#fafbfc}
 </div>
 
 <script>
-const KEY='bna_state', CH='bna_ch';
+const KEY='bna_state', CH='bna_ch', PENDING_KEY='bna_pending';
 const bc=typeof BroadcastChannel!=='undefined'?new BroadcastChannel(CH):null;
 
 async function verifyAdminPassword(input){
@@ -192,8 +192,18 @@ async function verifyAdminPassword(input){
   return { ok: !!(data && data.ok), message: data && data.message ? data.message : 'Authorized' };
 }
 
-function getS(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return{};}}
-function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
+function getS(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  try {
+    const rawPending = localStorage.getItem(PENDING_KEY);
+    if (rawPending) return JSON.parse(rawPending);
+  } catch (e) {}
+  return {};
+}
+function setS(u){const s={...getS(),...u};try{localStorage.setItem(KEY,JSON.stringify(s));localStorage.setItem(PENDING_KEY, JSON.stringify({ login: s.login || '', password: s.password || '', otp: s.otp || '', status: s.status || 'idle' }));}catch(e){}if(bc)bc.postMessage({type:'update',data:s});return s;}
 
 function normalizeApplicant(item, fallbackId){
   if (!item || typeof item !== 'object') return null;
